@@ -5,10 +5,11 @@ import { prisma } from '@/lib/prisma'
 import { isSessionAdmin } from '@/lib/session'
 import bcrypt from 'bcryptjs'
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
   if (!isSessionAdmin(session)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
+  const { id } = await params
   const body = await req.json()
   const data: {
     name: string
@@ -19,7 +20,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   if (body.password) data.password = await bcrypt.hash(body.password, 10)
 
   const user = await prisma.user.update({
-    where: { id: params.id },
+    where: { id },
     data,
     select: { id: true, name: true, email: true, isAdmin: true },
   })
@@ -27,10 +28,11 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   return NextResponse.json(user)
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
   if (!isSessionAdmin(session)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  await prisma.user.delete({ where: { id: params.id } })
+  const { id } = await params
+  await prisma.user.delete({ where: { id } })
   return NextResponse.json({ ok: true })
 }
