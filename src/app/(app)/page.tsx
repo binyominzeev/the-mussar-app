@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 
 interface Action {
   id: string
@@ -85,7 +86,7 @@ export default function DashboardPage() {
 
       {goals.length === 0 && (
         <div className="text-gray-400 text-sm py-8 text-center">
-          No goals yet. <a href="/goals" className="underline">Create your first goal</a>
+          No goals yet. <Link href="/goals" className="underline">Create your first goal</Link>
         </div>
       )}
 
