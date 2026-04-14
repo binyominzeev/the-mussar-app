@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { isSessionAdmin } from '@/lib/session'
 
 export async function GET() {
   const session = await getServerSession(authOptions)
-  if (!(session?.user as any)?.isAdmin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (!isSessionAdmin(session)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const pairs = await prisma.accountabilityPair.findMany({
     include: {
@@ -19,7 +20,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
-  if (!(session?.user as any)?.isAdmin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (!isSessionAdmin(session)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const body = await req.json()
   const pair = await prisma.accountabilityPair.create({
@@ -35,7 +36,7 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   const session = await getServerSession(authOptions)
-  if (!(session?.user as any)?.isAdmin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (!isSessionAdmin(session)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const body = await req.json()
   await prisma.accountabilityPair.delete({ where: { id: body.id } })

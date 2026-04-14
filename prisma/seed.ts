@@ -17,6 +17,13 @@ async function main() {
     },
   })
 
+  // Skip seeding goals if user already has them
+  const existingGoals = await prisma.goal.count({ where: { userId: user.id } })
+  if (existingGoals > 0) {
+    console.log('Seed data already exists, skipping goal creation.')
+    return
+  }
+
   const today = new Date()
   const thirtyDays = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000)
 

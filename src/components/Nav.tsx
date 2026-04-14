@@ -7,7 +7,7 @@ import { signOut, useSession } from 'next-auth/react'
 export default function Nav() {
   const pathname = usePathname()
   const { data: session } = useSession()
-  const isAdmin = (session?.user as any)?.isAdmin
+  const isAdmin = session?.user?.isAdmin
 
   const links = [
     { href: '/', label: 'Today' },

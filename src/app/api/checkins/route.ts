@@ -2,16 +2,21 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { getSessionUserId } from '@/lib/session'
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)
-  if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const userId = getSessionUserId(session)
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const userId = (session.user as any).id
   const { searchParams } = new URL(req.url)
   const dateStr = searchParams.get('date')
 
-  const where: any = { userId }
+  const where: {
+    userId: string
+    date?: { gte: Date; lte: Date }
+  } = { userId }
+
   if (dateStr) {
     const date = new Date(dateStr)
     const start = new Date(date)
@@ -27,9 +32,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
-  if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const userId = getSessionUserId(session)
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const userId = (session.user as any).id
   const body = await req.json()
 
   const date = new Date(body.date)

@@ -29,7 +29,7 @@ export default function AdminPage() {
   const [tab, setTab] = useState<'users' | 'pairs'>('users')
 
   useEffect(() => {
-    if (session && !(session.user as any)?.isAdmin) {
+    if (session && !session.user?.isAdmin) {
       router.push('/')
     }
   }, [session, router])

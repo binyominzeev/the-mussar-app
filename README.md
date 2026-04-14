@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# The Mussar App
+
+A structured personal growth and accountability web app built with Next.js, Prisma, and SQLite.
+
+## Features
+
+- **Dashboard** — today's actions with quick check-in (binary, quantitative, reflection)
+- **Goals** — manage Knowledge and Habits goals with 30-day focuses and daily actions
+- **Weekly Review** — completion stats and reflection
+- **Admin Panel** — user management and accountability pairs
+- **Authentication** — email + password login
 
 ## Getting Started
 
-First, run the development server:
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Set up environment
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` and set a secure `NEXTAUTH_SECRET` (e.g. `openssl rand -base64 32`).
+
+### 3. Set up database
+
+```bash
+npx prisma db push
+npx prisma db seed
+```
+
+Default login after seeding: `admin@mussar.app` / `password123`
+
+### 4. Start development server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Data Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+User
+└── Goal (type: "knowledge" | "habits")
+    └── Focus (30-day period)
+        └── Action (type: "binary" | "quantitative" | "reflection")
+            └── Checkin (daily)
+```
 
-## Learn More
+## Tech Stack
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Next.js 14** (App Router)
+- **Prisma** + SQLite
+- **NextAuth.js** (email/password)
+- **Tailwind CSS**
