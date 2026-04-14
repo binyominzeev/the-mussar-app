@@ -1,0 +1,42 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
+import { getSessionUserId } from '@/lib/session'
+
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const session = await getServerSession(authOptions)
+  const userId = getSessionUserId(session)
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const { id } = await params
+  const body = await req.json()
+
+  const focus = await prisma.focus.findUnique({ where: { id }, include: { goal: true } })
+  if (!focus || focus.goal.userId !== userId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+  const updated = await prisma.focus.update({
+    where: { id },
+    data: {
+      title: body.title,
+      description: body.description,
+      startDate: new Date(body.startDate),
+      endDate: new Date(body.endDate),
+    },
+  })
+
+  return NextResponse.json(updated)
+}
+
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const session = await getServerSession(authOptions)
+  const userId = getSessionUserId(session)
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const { id } = await params
+  const focus = await prisma.focus.findUnique({ where: { id }, include: { goal: true } })
+  if (!focus || focus.goal.userId !== userId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+  await prisma.focus.delete({ where: { id } })
+  return NextResponse.json({ ok: true })
+}
