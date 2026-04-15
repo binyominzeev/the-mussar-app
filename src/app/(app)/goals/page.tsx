@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface Action {
   id: string
@@ -26,6 +27,7 @@ interface Goal {
 }
 
 export default function GoalsPage() {
+  const { t } = useLanguage()
   const [goals, setGoals] = useState<Goal[]>([])
   const [showGoalForm, setShowGoalForm] = useState(false)
   const [editGoal, setEditGoal] = useState<Goal | null>(null)
@@ -53,7 +55,7 @@ export default function GoalsPage() {
   }
 
   async function deleteGoal(id: string) {
-    if (!confirm('Delete this goal?')) return
+    if (!confirm(t.goals.deleteGoalConfirm)) return
     await fetch(`/api/goals/${id}`, { method: 'DELETE' })
     load()
   }
@@ -70,7 +72,7 @@ export default function GoalsPage() {
   }
 
   async function deleteFocus(id: string) {
-    if (!confirm('Delete this focus?')) return
+    if (!confirm(t.goals.deleteFocusConfirm)) return
     await fetch(`/api/focuses/${id}`, { method: 'DELETE' })
     load()
   }
@@ -87,7 +89,7 @@ export default function GoalsPage() {
   }
 
   async function deleteAction(id: string) {
-    if (!confirm('Delete this action?')) return
+    if (!confirm(t.goals.deleteActionConfirm)) return
     await fetch(`/api/actions/${id}`, { method: 'DELETE' })
     load()
   }
@@ -95,12 +97,12 @@ export default function GoalsPage() {
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Goals</h1>
+        <h1 className="text-xl font-semibold">{t.goals.title}</h1>
         <button
           onClick={() => { setEditGoal(null); setShowGoalForm(true) }}
           className="text-sm bg-gray-900 text-white rounded-lg px-3 py-1.5 hover:bg-gray-700"
         >
-          + New Goal
+          {t.goals.newGoal}
         </button>
       </div>
 
@@ -109,11 +111,12 @@ export default function GoalsPage() {
           initial={editGoal || undefined}
           onSave={saveGoal}
           onCancel={() => { setShowGoalForm(false); setEditGoal(null) }}
+          t={t.goals}
         />
       )}
 
       {goals.length === 0 && !showGoalForm && (
-        <p className="text-gray-400 text-sm text-center py-8">No goals yet.</p>
+        <p className="text-gray-400 text-sm text-center py-8">{t.goals.noGoals}</p>
       )}
 
       {goals.map((goal) => (
@@ -121,14 +124,14 @@ export default function GoalsPage() {
           <div className="flex items-start justify-between">
             <div>
               <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">
-                {goal.type === 'knowledge' ? '📚 Knowledge' : '⚡ Habits'}
+                {goal.type === 'knowledge' ? t.goals.knowledge : t.goals.habits}
               </div>
               <h2 className="font-semibold">{goal.title}</h2>
               <p className="text-sm text-gray-600 mt-0.5">{goal.description}</p>
             </div>
             <div className="flex gap-2 ml-4">
-              <button onClick={() => { setEditGoal(goal); setShowGoalForm(true) }} className="text-xs text-gray-400 hover:text-gray-700">Edit</button>
-              <button onClick={() => deleteGoal(goal.id)} className="text-xs text-red-400 hover:text-red-600">Delete</button>
+              <button onClick={() => { setEditGoal(goal); setShowGoalForm(true) }} className="text-xs text-gray-400 hover:text-gray-700">{t.goals.edit}</button>
+              <button onClick={() => deleteGoal(goal.id)} className="text-xs text-red-400 hover:text-red-600">{t.goals.delete}</button>
             </div>
           </div>
 
@@ -144,8 +147,8 @@ export default function GoalsPage() {
                     </p>
                   </div>
                   <div className="flex gap-2 ml-3">
-                    <button onClick={() => { setEditFocus(focus); setShowFocusForm(goal.id) }} className="text-xs text-gray-400 hover:text-gray-700">Edit</button>
-                    <button onClick={() => deleteFocus(focus.id)} className="text-xs text-red-400 hover:text-red-600">Del</button>
+                    <button onClick={() => { setEditFocus(focus); setShowFocusForm(goal.id) }} className="text-xs text-gray-400 hover:text-gray-700">{t.goals.edit}</button>
+                    <button onClick={() => deleteFocus(focus.id)} className="text-xs text-red-400 hover:text-red-600">{t.goals.del}</button>
                   </div>
                 </div>
                 {showFocusForm === goal.id && editFocus?.id === focus.id && (
@@ -153,6 +156,7 @@ export default function GoalsPage() {
                     initial={focus}
                     onSave={(data) => saveFocus(data, goal.id, focus.id)}
                     onCancel={() => { setShowFocusForm(null); setEditFocus(null) }}
+                    t={t.goals}
                   />
                 )}
 
@@ -163,8 +167,8 @@ export default function GoalsPage() {
                         <span>{action.title}</span>
                         <div className="flex items-center gap-2">
                           <span className="text-xs text-gray-400">{action.type}</span>
-                          <button onClick={() => { setEditAction(action); setShowActionForm(focus.id) }} className="text-xs text-gray-400 hover:text-gray-700">Edit</button>
-                          <button onClick={() => deleteAction(action.id)} className="text-xs text-red-400 hover:text-red-600">Del</button>
+                          <button onClick={() => { setEditAction(action); setShowActionForm(focus.id) }} className="text-xs text-gray-400 hover:text-gray-700">{t.goals.edit}</button>
+                          <button onClick={() => deleteAction(action.id)} className="text-xs text-red-400 hover:text-red-600">{t.goals.del}</button>
                         </div>
                       </div>
                       {showActionForm === focus.id && editAction?.id === action.id && (
@@ -172,6 +176,7 @@ export default function GoalsPage() {
                           initial={action}
                           onSave={(data) => saveAction(data, focus.id, action.id)}
                           onCancel={() => { setShowActionForm(null); setEditAction(null) }}
+                          t={t.goals}
                         />
                       )}
                     </div>
@@ -180,12 +185,13 @@ export default function GoalsPage() {
                     onClick={() => { setEditAction(null); setShowActionForm(focus.id) }}
                     className="text-xs text-gray-400 hover:text-gray-700 py-1 px-2"
                   >
-                    + Add action
+                    {t.goals.addAction}
                   </button>
                   {showActionForm === focus.id && !editAction && (
                     <ActionForm
                       onSave={(data) => saveAction(data, focus.id)}
                       onCancel={() => setShowActionForm(null)}
+                      t={t.goals}
                     />
                   )}
                 </div>
@@ -196,12 +202,13 @@ export default function GoalsPage() {
               onClick={() => { setEditFocus(null); setShowFocusForm(goal.id) }}
               className="text-xs text-gray-400 hover:text-gray-700 py-1"
             >
-              + Add focus
+              {t.goals.addFocus}
             </button>
             {showFocusForm === goal.id && !editFocus && (
               <FocusForm
                 onSave={(data) => saveFocus(data, goal.id)}
                 onCancel={() => setShowFocusForm(null)}
+                t={t.goals}
               />
             )}
           </div>
@@ -215,10 +222,12 @@ function GoalForm({
   initial,
   onSave,
   onCancel,
+  t,
 }: {
   initial?: { id?: string; type?: string; title?: string; description?: string }
   onSave: (data: any, id?: string) => void
   onCancel: () => void
+  t: ReturnType<typeof useLanguage>['t']['goals']
 }) {
   const [type, setType] = useState(initial?.type || 'knowledge')
   const [title, setTitle] = useState(initial?.title || '')
@@ -226,16 +235,16 @@ function GoalForm({
 
   return (
     <div className="border border-gray-200 rounded-xl p-4 space-y-3 bg-gray-50">
-      <h3 className="text-sm font-medium">{initial?.id ? 'Edit Goal' : 'New Goal'}</h3>
+      <h3 className="text-sm font-medium">{initial?.id ? t.goalFormEdit : t.goalFormNew}</h3>
       <select value={type} onChange={(e) => setType(e.target.value)} className="w-full border border-gray-200 rounded px-2 py-1.5 text-sm">
-        <option value="knowledge">Knowledge</option>
-        <option value="habits">Habits</option>
+        <option value="knowledge">{t.goalTypeKnowledge}</option>
+        <option value="habits">{t.goalTypeHabits}</option>
       </select>
-      <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" className="w-full border border-gray-200 rounded px-2 py-1.5 text-sm" />
-      <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" rows={2} className="w-full border border-gray-200 rounded px-2 py-1.5 text-sm resize-none" />
+      <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t.titlePlaceholder} className="w-full border border-gray-200 rounded px-2 py-1.5 text-sm" />
+      <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t.descriptionPlaceholder} rows={2} className="w-full border border-gray-200 rounded px-2 py-1.5 text-sm resize-none" />
       <div className="flex gap-2">
-        <button onClick={() => onSave({ type, title, description }, initial?.id)} className="text-xs bg-gray-900 text-white rounded px-3 py-1.5 hover:bg-gray-700">Save</button>
-        <button onClick={onCancel} className="text-xs text-gray-500 hover:text-gray-700 px-3 py-1.5">Cancel</button>
+        <button onClick={() => onSave({ type, title, description }, initial?.id)} className="text-xs bg-gray-900 text-white rounded px-3 py-1.5 hover:bg-gray-700">{t.save}</button>
+        <button onClick={onCancel} className="text-xs text-gray-500 hover:text-gray-700 px-3 py-1.5">{t.cancel}</button>
       </div>
     </div>
   )
@@ -245,10 +254,12 @@ function FocusForm({
   initial,
   onSave,
   onCancel,
+  t,
 }: {
   initial?: { title?: string; description?: string; startDate?: string; endDate?: string }
   onSave: (data: any) => void
   onCancel: () => void
+  t: ReturnType<typeof useLanguage>['t']['goals']
 }) {
   const today = new Date().toISOString().split('T')[0]
   const thirtyDays = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
@@ -260,16 +271,16 @@ function FocusForm({
 
   return (
     <div className="border border-gray-200 rounded-lg p-3 space-y-2 bg-white">
-      <h4 className="text-xs font-medium text-gray-600">{initial?.title ? 'Edit Focus' : 'New Focus'}</h4>
-      <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" className="w-full border border-gray-200 rounded px-2 py-1.5 text-sm" />
-      <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" rows={2} className="w-full border border-gray-200 rounded px-2 py-1.5 text-sm resize-none" />
+      <h4 className="text-xs font-medium text-gray-600">{initial?.title ? t.focusFormEdit : t.focusFormNew}</h4>
+      <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t.titlePlaceholder} className="w-full border border-gray-200 rounded px-2 py-1.5 text-sm" />
+      <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t.descriptionPlaceholder} rows={2} className="w-full border border-gray-200 rounded px-2 py-1.5 text-sm resize-none" />
       <div className="flex gap-2">
         <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="flex-1 border border-gray-200 rounded px-2 py-1.5 text-sm" />
         <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="flex-1 border border-gray-200 rounded px-2 py-1.5 text-sm" />
       </div>
       <div className="flex gap-2">
-        <button onClick={() => onSave({ title, description, startDate, endDate })} className="text-xs bg-gray-800 text-white rounded px-3 py-1.5">Save</button>
-        <button onClick={onCancel} className="text-xs text-gray-500 px-3 py-1.5">Cancel</button>
+        <button onClick={() => onSave({ title, description, startDate, endDate })} className="text-xs bg-gray-800 text-white rounded px-3 py-1.5">{t.save}</button>
+        <button onClick={onCancel} className="text-xs text-gray-500 px-3 py-1.5">{t.cancel}</button>
       </div>
     </div>
   )
@@ -279,25 +290,27 @@ function ActionForm({
   initial,
   onSave,
   onCancel,
+  t,
 }: {
   initial?: { title?: string; type?: string }
   onSave: (data: any) => void
   onCancel: () => void
+  t: ReturnType<typeof useLanguage>['t']['goals']
 }) {
   const [title, setTitle] = useState(initial?.title || '')
   const [type, setType] = useState(initial?.type || 'binary')
 
   return (
     <div className="border border-gray-200 rounded-lg p-3 space-y-2 bg-white text-sm">
-      <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Action title" className="w-full border border-gray-200 rounded px-2 py-1.5 text-sm" />
+      <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t.actionTitlePlaceholder} className="w-full border border-gray-200 rounded px-2 py-1.5 text-sm" />
       <select value={type} onChange={(e) => setType(e.target.value)} className="w-full border border-gray-200 rounded px-2 py-1.5 text-sm">
-        <option value="binary">Binary (yes/no)</option>
-        <option value="quantitative">Quantitative (number)</option>
-        <option value="reflection">Reflection (text)</option>
+        <option value="binary">{t.actionTypeBinary}</option>
+        <option value="quantitative">{t.actionTypeQuantitative}</option>
+        <option value="reflection">{t.actionTypeReflection}</option>
       </select>
       <div className="flex gap-2">
-        <button onClick={() => onSave({ title, type })} className="text-xs bg-gray-800 text-white rounded px-3 py-1.5">Save</button>
-        <button onClick={onCancel} className="text-xs text-gray-500 px-3 py-1.5">Cancel</button>
+        <button onClick={() => onSave({ title, type })} className="text-xs bg-gray-800 text-white rounded px-3 py-1.5">{t.save}</button>
+        <button onClick={onCancel} className="text-xs text-gray-500 px-3 py-1.5">{t.cancel}</button>
       </div>
     </div>
   )

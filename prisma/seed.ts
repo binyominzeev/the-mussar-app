@@ -32,15 +32,15 @@ async function main() {
       userId: user.id,
       type: 'knowledge',
       title: 'Chosen Mishpat',
-      description: 'Build structured halachic knowledge in Chosen Mishpat and Nida through consistent study and active processing.',
+      description: 'Építs strukturált halachikus tudást Chosen Mishpatban és Nidában következetes tanulással és aktív feldolgozással.',
     },
   })
 
   const knowledgeFocus = await prisma.focus.create({
     data: {
       goalId: knowledgeGoal.id,
-      title: 'Learning System',
-      description: 'Establish a stable daily learning routine including study, notes, and review.',
+      title: 'Tanulási rendszer',
+      description: 'Alapíts stabil napi tanulási rutint, amely magában foglalja a tanulást, a jegyzetelést és az ismétlést.',
       startDate: today,
       endDate: thirtyDays,
     },
@@ -48,9 +48,9 @@ async function main() {
 
   await prisma.action.createMany({
     data: [
-      { focusId: knowledgeFocus.id, title: 'Study today', type: 'binary' },
-      { focusId: knowledgeFocus.id, title: 'Create notes or Sefaria sheet', type: 'binary' },
-      { focusId: knowledgeFocus.id, title: 'Do flashcard review', type: 'binary' },
+      { focusId: knowledgeFocus.id, title: 'Tanulj ma', type: 'binary' },
+      { focusId: knowledgeFocus.id, title: 'Készíts jegyzeteket vagy Sefaria lapot', type: 'binary' },
+      { focusId: knowledgeFocus.id, title: 'Végezd el a kártyás ismétlést', type: 'binary' },
     ],
   })
 
@@ -58,16 +58,16 @@ async function main() {
     data: {
       userId: user.id,
       type: 'habits',
-      title: 'Daily Discipline',
-      description: 'Build a stable daily rhythm with consistent sleep, reduced lateness, and better time management.',
+      title: 'Napi fegyelem',
+      description: 'Építs stabil napi ritmust következetes alvással, kevesebb késéssel és jobb időgazdálkodással.',
     },
   })
 
   const habitsFocus = await prisma.focus.create({
     data: {
       goalId: habitsGoal.id,
-      title: 'Stable Rhythm',
-      description: 'Fix wake/sleep times and improve use of dead time.',
+      title: 'Stabil ritmus',
+      description: 'Rögzítsd az ébredési/alvási időket és javítsd a holt idő felhasználását.',
       startDate: today,
       endDate: thirtyDays,
     },
@@ -75,10 +75,10 @@ async function main() {
 
   await prisma.action.createMany({
     data: [
-      { focusId: habitsFocus.id, title: 'Wake up on time', type: 'binary' },
-      { focusId: habitsFocus.id, title: 'Go to sleep on time', type: 'binary' },
-      { focusId: habitsFocus.id, title: 'Used dead time well', type: 'reflection' },
-      { focusId: habitsFocus.id, title: 'Did 10-20 min exercise', type: 'binary' },
+      { focusId: habitsFocus.id, title: 'Ébredj fel időben', type: 'binary' },
+      { focusId: habitsFocus.id, title: 'Feküdj le időben', type: 'binary' },
+      { focusId: habitsFocus.id, title: 'Jól használtad a holt időt', type: 'reflection' },
+      { focusId: habitsFocus.id, title: 'Végezz 10-20 perces edzést', type: 'binary' },
     ],
   })
 
