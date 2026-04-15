@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface Action {
   id: string
@@ -33,6 +34,7 @@ interface GoalWithFocuses {
 }
 
 export default function DashboardPage() {
+  const { t, language } = useLanguage()
   const [goals, setGoals] = useState<GoalWithFocuses[]>([])
   const [checkins, setCheckins] = useState<Checkin[]>([])
   const [reflection, setReflection] = useState('')
@@ -72,21 +74,22 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold">Today</h1>
+        <h1 className="text-xl font-semibold">{t.dashboard.title}</h1>
         <p className="text-sm text-gray-500 mt-0.5">
-          {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+          {new Date().toLocaleDateString(language === 'hu' ? 'hu-HU' : 'en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
         </p>
       </div>
 
       {allActions.length > 0 && (
         <div className="text-sm text-gray-500">
-          {completedCount} / {allActions.length} completed
+          {completedCount} / {allActions.length} {t.dashboard.completed}
         </div>
       )}
 
       {goals.length === 0 && (
         <div className="text-gray-400 text-sm py-8 text-center">
-          No goals yet. <Link href="/goals" className="underline">Create your first goal</Link>
+          {t.dashboard.noGoals}{' '}
+          <Link href="/goals" className="underline">{t.dashboard.createFirstGoal}</Link>
         </div>
       )}
 
@@ -105,6 +108,7 @@ export default function DashboardPage() {
                     action={action}
                     checkin={checkin}
                     onCheckin={handleCheckin}
+                    writeReflection={t.dashboard.writeReflection}
                   />
                 )
               })}
@@ -114,20 +118,20 @@ export default function DashboardPage() {
       ))}
 
       <section className="border-t pt-4">
-        <h2 className="text-sm font-medium mb-2">Daily reflection</h2>
-        <p className="text-xs text-gray-500 mb-2">What was the biggest difficulty today?</p>
+        <h2 className="text-sm font-medium mb-2">{t.dashboard.dailyReflection}</h2>
+        <p className="text-xs text-gray-500 mb-2">{t.dashboard.biggestDifficulty}</p>
         <textarea
           value={reflection}
           onChange={(e) => setReflection(e.target.value)}
           rows={3}
           className="w-full border border-gray-200 rounded-lg p-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-gray-300"
-          placeholder="Optional..."
+          placeholder={t.dashboard.optional}
         />
         <button
           onClick={() => setSaved(true)}
           className="mt-2 text-xs bg-gray-100 hover:bg-gray-200 rounded px-3 py-1.5"
         >
-          {saved ? '✓ Saved' : 'Save reflection'}
+          {saved ? t.dashboard.saved : t.dashboard.saveReflection}
         </button>
       </section>
     </div>
@@ -138,10 +142,12 @@ function ActionItem({
   action,
   checkin,
   onCheckin,
+  writeReflection,
 }: {
   action: { id: string; title: string; type: string }
   checkin?: { value: string }
   onCheckin: (id: string, value: string | boolean) => void
+  writeReflection: string
 }) {
   if (action.type === 'binary') {
     const checked = checkin?.value === 'true'
@@ -180,7 +186,7 @@ function ActionItem({
         defaultValue={checkin?.value || ''}
         rows={2}
         className="w-full border border-gray-200 rounded p-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-gray-300"
-        placeholder="Write your reflection..."
+        placeholder={writeReflection}
         onBlur={(e) => onCheckin(action.id, e.target.value)}
       />
     </div>

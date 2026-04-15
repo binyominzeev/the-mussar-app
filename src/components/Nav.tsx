@@ -3,17 +3,19 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function Nav() {
   const pathname = usePathname()
   const { data: session } = useSession()
   const isAdmin = session?.user?.isAdmin
+  const { language, setLanguage, t } = useLanguage()
 
   const links = [
-    { href: '/', label: 'Today' },
-    { href: '/goals', label: 'Goals' },
-    { href: '/review', label: 'Review' },
-    ...(isAdmin ? [{ href: '/admin', label: 'Admin' }] : []),
+    { href: '/', label: t.nav.today },
+    { href: '/goals', label: t.nav.goals },
+    { href: '/review', label: t.nav.review },
+    ...(isAdmin ? [{ href: '/admin', label: t.nav.admin }] : []),
   ]
 
   return (
@@ -34,12 +36,29 @@ export default function Nav() {
             </Link>
           ))}
         </div>
-        <button
-          onClick={() => signOut({ callbackUrl: '/login' })}
-          className="text-xs text-gray-400 hover:text-gray-600"
-        >
-          Sign out
-        </button>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 text-xs">
+            <button
+              onClick={() => setLanguage('en')}
+              className={language === 'en' ? 'font-semibold text-gray-900' : 'text-gray-400 hover:text-gray-600'}
+            >
+              EN
+            </button>
+            <span className="text-gray-300">|</span>
+            <button
+              onClick={() => setLanguage('hu')}
+              className={language === 'hu' ? 'font-semibold text-gray-900' : 'text-gray-400 hover:text-gray-600'}
+            >
+              HU
+            </button>
+          </div>
+          <button
+            onClick={() => signOut({ callbackUrl: '/login' })}
+            className="text-xs text-gray-400 hover:text-gray-600"
+          >
+            {t.nav.signOut}
+          </button>
+        </div>
       </div>
     </nav>
   )

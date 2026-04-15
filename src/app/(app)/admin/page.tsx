@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface User {
   id: string
@@ -21,6 +22,7 @@ interface Pair {
 export default function AdminPage() {
   const { data: session } = useSession()
   const router = useRouter()
+  const { t } = useLanguage()
   const [users, setUsers] = useState<User[]>([])
   const [pairs, setPairs] = useState<Pair[]>([])
   const [showUserForm, setShowUserForm] = useState(false)
@@ -61,13 +63,13 @@ export default function AdminPage() {
   }
 
   async function deleteUser(id: string) {
-    if (!confirm('Delete user?')) return
+    if (!confirm(t.admin.deleteUserConfirm)) return
     await fetch(`/api/admin/users/${id}`, { method: 'DELETE' })
     loadUsers()
   }
 
   async function deletePair(id: string) {
-    if (!confirm('Remove pair?')) return
+    if (!confirm(t.admin.deletePairConfirm)) return
     await fetch('/api/admin/pairs', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
     loadPairs()
   }
@@ -80,20 +82,20 @@ export default function AdminPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-semibold">Admin Panel</h1>
+      <h1 className="text-xl font-semibold">{t.admin.title}</h1>
 
       <div className="flex gap-4 border-b">
         <button
           onClick={() => setTab('users')}
           className={`text-sm pb-2 ${tab === 'users' ? 'border-b-2 border-gray-900 font-medium' : 'text-gray-500'}`}
         >
-          Users
+          {t.admin.users}
         </button>
         <button
           onClick={() => setTab('pairs')}
           className={`text-sm pb-2 ${tab === 'pairs' ? 'border-b-2 border-gray-900 font-medium' : 'text-gray-500'}`}
         >
-          Accountability Pairs
+          {t.admin.pairs}
         </button>
       </div>
 
@@ -104,7 +106,7 @@ export default function AdminPage() {
               onClick={() => { setEditUser(null); setShowUserForm(true) }}
               className="text-sm bg-gray-900 text-white rounded-lg px-3 py-1.5 hover:bg-gray-700"
             >
-              + New User
+              {t.admin.newUser}
             </button>
           </div>
 
@@ -113,6 +115,7 @@ export default function AdminPage() {
               initial={editUser || undefined}
               onSave={saveUser}
               onCancel={() => { setShowUserForm(false); setEditUser(null) }}
+              t={t.admin}
             />
           )}
 
@@ -122,11 +125,11 @@ export default function AdminPage() {
                 <div>
                   <p className="text-sm font-medium">{user.name}</p>
                   <p className="text-xs text-gray-500">{user.email}</p>
-                  {user.isAdmin && <span className="text-xs text-blue-500">Admin</span>}
+                  {user.isAdmin && <span className="text-xs text-blue-500">{t.admin.isAdmin}</span>}
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={() => { setEditUser(user); setShowUserForm(true) }} className="text-xs text-gray-400 hover:text-gray-700">Edit</button>
-                  <button onClick={() => deleteUser(user.id)} className="text-xs text-red-400 hover:text-red-600">Delete</button>
+                  <button onClick={() => { setEditUser(user); setShowUserForm(true) }} className="text-xs text-gray-400 hover:text-gray-700">{t.admin.edit}</button>
+                  <button onClick={() => deleteUser(user.id)} className="text-xs text-red-400 hover:text-red-600">{t.admin.delete}</button>
                 </div>
               </div>
             ))}
@@ -141,7 +144,7 @@ export default function AdminPage() {
               onClick={() => setShowPairForm(true)}
               className="text-sm bg-gray-900 text-white rounded-lg px-3 py-1.5 hover:bg-gray-700"
             >
-              + Add Pair
+              {t.admin.addPair}
             </button>
           </div>
 
@@ -150,6 +153,7 @@ export default function AdminPage() {
               users={users}
               onSave={savePair}
               onCancel={() => setShowPairForm(false)}
+              t={t.admin}
             />
           )}
 
@@ -164,10 +168,10 @@ export default function AdminPage() {
                   </p>
                   <p className="text-xs text-gray-400">{pair.type}</p>
                 </div>
-                <button onClick={() => deletePair(pair.id)} className="text-xs text-red-400 hover:text-red-600">Remove</button>
+                <button onClick={() => deletePair(pair.id)} className="text-xs text-red-400 hover:text-red-600">{t.admin.remove}</button>
               </div>
             ))}
-            {pairs.length === 0 && <p className="text-sm text-gray-400 text-center py-4">No pairs yet.</p>}
+            {pairs.length === 0 && <p className="text-sm text-gray-400 text-center py-4">{t.admin.noPairs}</p>}
           </div>
         </div>
       )}
@@ -179,10 +183,12 @@ function UserForm({
   initial,
   onSave,
   onCancel,
+  t,
 }: {
   initial?: User
   onSave: (data: any, id?: string) => void
   onCancel: () => void
+  t: ReturnType<typeof useLanguage>['t']['admin']
 }) {
   const [name, setName] = useState(initial?.name || '')
   const [email, setEmail] = useState(initial?.email || '')
@@ -191,17 +197,17 @@ function UserForm({
 
   return (
     <div className="border border-gray-200 rounded-xl p-4 space-y-3 bg-gray-50">
-      <h3 className="text-sm font-medium">{initial?.id ? 'Edit User' : 'New User'}</h3>
-      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" className="w-full border border-gray-200 rounded px-2 py-1.5 text-sm" />
-      <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" type="email" className="w-full border border-gray-200 rounded px-2 py-1.5 text-sm" />
-      <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder={initial ? 'New password (optional)' : 'Password'} type="password" className="w-full border border-gray-200 rounded px-2 py-1.5 text-sm" />
+      <h3 className="text-sm font-medium">{initial?.id ? t.editUser : t.newUserForm}</h3>
+      <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t.namePlaceholder} className="w-full border border-gray-200 rounded px-2 py-1.5 text-sm" />
+      <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t.emailPlaceholder} type="email" className="w-full border border-gray-200 rounded px-2 py-1.5 text-sm" />
+      <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder={initial ? t.passwordChangePlaceholder : t.passwordPlaceholder} type="password" className="w-full border border-gray-200 rounded px-2 py-1.5 text-sm" />
       <label className="flex items-center gap-2 text-sm">
         <input type="checkbox" checked={isAdmin} onChange={(e) => setIsAdmin(e.target.checked)} />
-        Admin
+        {t.isAdmin}
       </label>
       <div className="flex gap-2">
-        <button onClick={() => onSave({ name, email, password, isAdmin }, initial?.id)} className="text-xs bg-gray-900 text-white rounded px-3 py-1.5">Save</button>
-        <button onClick={onCancel} className="text-xs text-gray-500 px-3 py-1.5">Cancel</button>
+        <button onClick={() => onSave({ name, email, password, isAdmin }, initial?.id)} className="text-xs bg-gray-900 text-white rounded px-3 py-1.5">{t.save}</button>
+        <button onClick={onCancel} className="text-xs text-gray-500 px-3 py-1.5">{t.cancel}</button>
       </div>
     </div>
   )
@@ -211,10 +217,12 @@ function PairForm({
   users,
   onSave,
   onCancel,
+  t,
 }: {
   users: User[]
   onSave: (data: any) => void
   onCancel: () => void
+  t: ReturnType<typeof useLanguage>['t']['admin']
 }) {
   const [userId, setUserId] = useState(users[0]?.id || '')
   const [partnerId, setPartnerId] = useState(users[1]?.id || '')
@@ -222,7 +230,7 @@ function PairForm({
 
   return (
     <div className="border border-gray-200 rounded-xl p-4 space-y-3 bg-gray-50">
-      <h3 className="text-sm font-medium">Add Accountability Pair</h3>
+      <h3 className="text-sm font-medium">{t.addPairForm}</h3>
       <select value={userId} onChange={(e) => setUserId(e.target.value)} className="w-full border border-gray-200 rounded px-2 py-1.5 text-sm">
         {users.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
       </select>
@@ -230,12 +238,12 @@ function PairForm({
         {users.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
       </select>
       <select value={type} onChange={(e) => setType(e.target.value)} className="w-full border border-gray-200 rounded px-2 py-1.5 text-sm">
-        <option value="chavruta">Chavruta</option>
-        <option value="coach">Coach</option>
+        <option value="chavruta">{t.pairTypeChavruta}</option>
+        <option value="coach">{t.pairTypeCoach}</option>
       </select>
       <div className="flex gap-2">
-        <button onClick={() => onSave({ userId, partnerId, type })} className="text-xs bg-gray-900 text-white rounded px-3 py-1.5">Save</button>
-        <button onClick={onCancel} className="text-xs text-gray-500 px-3 py-1.5">Cancel</button>
+        <button onClick={() => onSave({ userId, partnerId, type })} className="text-xs bg-gray-900 text-white rounded px-3 py-1.5">{t.save}</button>
+        <button onClick={onCancel} className="text-xs text-gray-500 px-3 py-1.5">{t.cancel}</button>
       </div>
     </div>
   )

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface Checkin {
   id: string
@@ -20,6 +21,7 @@ interface Checkin {
 }
 
 export default function ReviewPage() {
+  const { t } = useLanguage()
   const [checkins, setCheckins] = useState<Checkin[]>([])
   const [weeks, setWeeks] = useState(1)
   const [reflection, setReflection] = useState('')
@@ -48,20 +50,20 @@ export default function ReviewPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Weekly Review</h1>
+        <h1 className="text-xl font-semibold">{t.review.title}</h1>
         <select
           value={weeks}
           onChange={(e) => setWeeks(Number(e.target.value))}
           className="text-sm border border-gray-200 rounded px-2 py-1"
         >
-          <option value={1}>Last 7 days</option>
-          <option value={2}>Last 14 days</option>
-          <option value={4}>Last 30 days</option>
+          <option value={1}>{t.review.last7}</option>
+          <option value={2}>{t.review.last14}</option>
+          <option value={4}>{t.review.last30}</option>
         </select>
       </div>
 
       {checkins.length === 0 ? (
-        <p className="text-gray-400 text-sm text-center py-8">No check-ins yet.</p>
+        <p className="text-gray-400 text-sm text-center py-8">{t.review.noCheckins}</p>
       ) : (
         <div className="space-y-4">
           {Object.entries(byAction).map(([actionId, data]) => {
@@ -81,7 +83,7 @@ export default function ReviewPage() {
                   </div>
                   <div className="text-right">
                     <p className="text-lg font-semibold">{pct}%</p>
-                    <p className="text-xs text-gray-400">{completedDays}/{dates.length} days</p>
+                    <p className="text-xs text-gray-400">{completedDays}/{dates.length} {t.review.days}</p>
                   </div>
                 </div>
 
@@ -112,16 +114,16 @@ export default function ReviewPage() {
       )}
 
       <div className="border-t pt-4">
-        <h2 className="text-sm font-medium mb-2">Weekly reflection</h2>
+        <h2 className="text-sm font-medium mb-2">{t.review.weeklyReflection}</h2>
         <textarea
           value={reflection}
           onChange={(e) => setReflection(e.target.value)}
           rows={4}
           className="w-full border border-gray-200 rounded-lg p-3 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-gray-300"
-          placeholder="What went well? What needs improvement? What will you focus on next week?"
+          placeholder={t.review.reflectionPlaceholder}
         />
         <button className="mt-2 text-xs bg-gray-100 hover:bg-gray-200 rounded px-3 py-1.5">
-          Save reflection
+          {t.review.saveReflection}
         </button>
       </div>
     </div>
