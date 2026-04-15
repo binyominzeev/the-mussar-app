@@ -55,7 +55,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id ?? ''
         session.user.isAdmin = token.isAdmin ?? false
       }
-      const tokenExp = typeof token.exp === 'number' ? token.exp : Math.floor(Date.now() / 1000)
+      const tokenExp = typeof token.exp === 'number' ? token.exp : Math.floor(Date.now() / 1000) + THIRTY_DAYS_IN_SECONDS
       session.expires = new Date(tokenExp * 1000).toISOString()
       return session
     },
