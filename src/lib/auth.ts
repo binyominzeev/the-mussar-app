@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs'
 
 const THIRTY_DAYS_IN_SECONDS = 30 * 24 * 60 * 60
 const ONE_DAY_IN_SECONDS = 24 * 60 * 60
+const getDefaultTokenExpiry = () => Math.floor(Date.now() / 1000) + THIRTY_DAYS_IN_SECONDS
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -44,8 +45,8 @@ export const authOptions: NextAuthOptions = {
         token.isAdmin = user.isAdmin
         token.iat = now
         token.exp = now + THIRTY_DAYS_IN_SECONDS
-      } else if (typeof token.exp !== 'number' || token.exp <= now) {
-        token.exp = now + THIRTY_DAYS_IN_SECONDS
+      } else if (typeof token.exp !== 'number') {
+        token.exp = getDefaultTokenExpiry()
       }
 
       return token
@@ -55,7 +56,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id ?? ''
         session.user.isAdmin = token.isAdmin ?? false
       }
-      const tokenExp = typeof token.exp === 'number' ? token.exp : Math.floor(Date.now() / 1000) + THIRTY_DAYS_IN_SECONDS
+      const tokenExp = typeof token.exp === 'number' ? token.exp : getDefaultTokenExpiry()
       session.expires = new Date(tokenExp * 1000).toISOString()
       return session
     },
