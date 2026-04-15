@@ -44,7 +44,7 @@ export const authOptions: NextAuthOptions = {
         token.isAdmin = user.isAdmin
         token.iat = now
         token.exp = now + THIRTY_DAYS_IN_SECONDS
-      } else if (!token.exp) {
+      } else if (typeof token.exp !== 'number' || token.exp <= now) {
         token.exp = now + THIRTY_DAYS_IN_SECONDS
       }
 
