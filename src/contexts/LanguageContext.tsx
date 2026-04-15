@@ -19,6 +19,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = useState<Language>('en')
 
   useEffect(() => {
+    if (typeof window === 'undefined') return
     const stored = localStorage.getItem('language') as Language | null
     if (stored && stored in translations) {
       setLanguageState(stored)
@@ -27,7 +28,9 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   function setLanguage(lang: Language) {
     setLanguageState(lang)
-    localStorage.setItem('language', lang)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('language', lang)
+    }
   }
 
   return (

@@ -96,7 +96,7 @@ export default function DashboardPage() {
       {goals.map((goal) => (
         <section key={goal.id}>
           <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
-            {goal.type === 'knowledge' ? t.goals.knowledge : t.goals.habits} {goal.title}
+            {goal.type === 'knowledge' ? '📚' : '⚡'} {goal.title}
           </h2>
           {goal.focuses.map((focus) => (
             <div key={focus.id} className="space-y-2">
