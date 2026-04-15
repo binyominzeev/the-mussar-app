@@ -3,6 +3,10 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import { prisma } from './prisma'
 import bcrypt from 'bcryptjs'
 
+const THIRTY_DAYS_IN_SECONDS = 30 * 24 * 60 * 60
+const ONE_DAY_IN_SECONDS = 24 * 60 * 60
+const getDefaultTokenExpiry = () => Math.floor(Date.now() / 1000) + THIRTY_DAYS_IN_SECONDS
+
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
@@ -34,10 +38,17 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user }) {
+      const now = Math.floor(Date.now() / 1000)
+
       if (user) {
         token.id = user.id
         token.isAdmin = user.isAdmin
+        token.iat = now
+        token.exp = now + THIRTY_DAYS_IN_SECONDS
+      } else if (typeof token.exp !== 'number') {
+        token.exp = getDefaultTokenExpiry()
       }
+
       return token
     },
     async session({ session, token }) {
@@ -45,6 +56,8 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id ?? ''
         session.user.isAdmin = token.isAdmin ?? false
       }
+      const tokenExp = typeof token.exp === 'number' ? token.exp : getDefaultTokenExpiry()
+      session.expires = new Date(tokenExp * 1000).toISOString()
       return session
     },
   },
@@ -53,5 +66,7 @@ export const authOptions: NextAuthOptions = {
   },
   session: {
     strategy: 'jwt',
+    maxAge: THIRTY_DAYS_IN_SECONDS,
+    updateAge: ONE_DAY_IN_SECONDS,
   },
 }
