@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
 
 type GoalType = 'knowledge' | 'habits'
@@ -339,22 +339,45 @@ function ActionCheckinEditor({
   compact?: boolean
 }) {
   const [value, setValue] = useState(initialValue)
+  const hasSkippedInitialSave = useRef(false)
+  const onSaveRef = useRef(onSave)
 
   useEffect(() => {
+    hasSkippedInitialSave.current = false
     setValue(initialValue)
   }, [initialValue, action.id])
 
+  useEffect(() => {
+    onSaveRef.current = onSave
+  }, [onSave])
+
+  useEffect(() => {
+    if (action.type !== 'reflection') return
+    if (!hasSkippedInitialSave.current) {
+      // Skip the initial hydration/reset so we do not save unchanged server state.
+      hasSkippedInitialSave.current = true
+      return
+    }
+
+    // 400ms gives fast feedback while collapsing rapid typing into fewer saves.
+    const timeout = setTimeout(() => {
+      onSaveRef.current(value)
+    }, 400)
+
+    return () => clearTimeout(timeout)
+  }, [action.type, value])
+
   if (action.type === 'binary') {
     const checked = value === 'true'
+    const binaryLabelClass = ['inline-flex items-center text-sm text-gray-700', compact ? '' : 'gap-2'].filter(Boolean).join(' ')
 
     return (
-      <label className={compact ? 'inline-flex items-center text-sm text-gray-700' : 'inline-flex items-center gap-2 text-sm text-gray-700'}>
+      <label className={binaryLabelClass}>
         <input
           type="checkbox"
           checked={checked}
           onChange={(e) => {
-            const nextValue = String(e.target.checked)
-            setValue(nextValue)
+            setValue(String(e.target.checked))
             onSave(e.target.checked)
           }}
           className="w-4 h-4 rounded"
@@ -365,7 +388,7 @@ function ActionCheckinEditor({
 
   if (action.type === 'quantitative') {
     return (
-      <div className={compact ? '' : 'flex items-end gap-2'}>
+      <div className={compact ? 'inline-flex' : 'flex items-end gap-2'}>
         <input
           type="number"
           value={value}
@@ -384,10 +407,7 @@ function ActionCheckinEditor({
     <div>
       <textarea
         value={value}
-        onChange={(e) => {
-          setValue(e.target.value)
-          onSave(e.target.value)
-        }}
+        onChange={(e) => setValue(e.target.value)}
         rows={2}
         className="w-full border border-gray-200 rounded p-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-gray-300"
         placeholder={reflectionPlaceholder}
