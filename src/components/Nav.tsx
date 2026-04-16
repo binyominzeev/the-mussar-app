@@ -127,7 +127,7 @@ export default function Nav() {
         </div>
       </div>
 
-      <nav className="md:hidden fixed inset-x-0 bottom-0 border-t border-gray-200 bg-white/95 backdrop-blur-sm z-20">
+      <nav aria-label="Primary navigation" className="md:hidden fixed inset-x-0 bottom-0 border-t border-gray-200 bg-white/95 backdrop-blur-sm z-20">
         <div className="max-w-2xl mx-auto px-2 flex items-stretch">
           {links.map((link) => {
             const isActive = pathname === link.href
@@ -135,6 +135,7 @@ export default function Nav() {
               <Link
                 key={link.href}
                 href={link.href}
+                title={link.label}
                 className={`flex-1 min-w-0 py-2.5 flex flex-col items-center justify-center gap-0.5 text-xs font-medium ${
                   isActive ? 'text-gray-900' : 'text-gray-500'
                 }`}
