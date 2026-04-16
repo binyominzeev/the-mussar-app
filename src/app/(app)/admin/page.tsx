@@ -32,7 +32,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (session && !session.user?.isAdmin) {
-      router.push('/')
+      router.push('/goals')
     }
   }, [session, router])
 

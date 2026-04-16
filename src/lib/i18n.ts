@@ -2,8 +2,9 @@ export type Language = 'en' | 'hu'
 
 export interface Translations {
   nav: {
-    today: string
     goals: string
+    knowledge: string
+    habits: string
     review: string
     admin: string
     signOut: string
@@ -38,8 +39,12 @@ export interface Translations {
     edit: string
     delete: string
     del: string
+    editModeOn: string
+    editModeOff: string
+    noFocuses: string
     addAction: string
     addFocus: string
+    addFocusFor: string
     deleteGoalConfirm: string
     deleteFocusConfirm: string
     deleteActionConfirm: string
@@ -100,9 +105,10 @@ export const translations: Record<Language, Translations> = {
   en: {
     // Nav
     nav: {
-      today: 'Today',
       goals: 'Goals',
-      review: 'Review',
+      knowledge: 'Knowledge',
+      habits: 'Habits',
+      review: 'Overview',
       admin: 'Admin',
       signOut: 'Sign out',
     },
@@ -139,8 +145,12 @@ export const translations: Record<Language, Translations> = {
       edit: 'Edit',
       delete: 'Delete',
       del: 'Del',
+      editModeOn: 'Edit mode: On',
+      editModeOff: 'Edit mode: Off',
+      noFocuses: 'No focuses yet.',
       addAction: '+ Add action',
       addFocus: '+ Add focus',
+      addFocusFor: '+ Add focus',
       deleteGoalConfirm: 'Delete this goal?',
       deleteFocusConfirm: 'Delete this focus?',
       deleteActionConfirm: 'Delete this action?',
@@ -204,8 +214,9 @@ export const translations: Record<Language, Translations> = {
   hu: {
     // Nav
     nav: {
-      today: 'Ma',
       goals: 'Célok',
+      knowledge: 'Tudás',
+      habits: 'Szokások',
       review: 'Áttekintés',
       admin: 'Admin',
       signOut: 'Kijelentkezés',
@@ -243,8 +254,12 @@ export const translations: Record<Language, Translations> = {
       edit: 'Szerkesztés',
       delete: 'Törlés',
       del: 'Törl',
+      editModeOn: 'Szerkesztés: Be',
+      editModeOff: 'Szerkesztés: Ki',
+      noFocuses: 'Még nincsenek fókuszok.',
       addAction: '+ Cselekvés hozzáadása',
       addFocus: '+ Fókusz hozzáadása',
+      addFocusFor: '+ Fókusz hozzáadása',
       deleteGoalConfirm: 'Töröljük ezt a célt?',
       deleteFocusConfirm: 'Töröljük ezt a fókuszt?',
       deleteActionConfirm: 'Töröljük ezt a cselekvést?',

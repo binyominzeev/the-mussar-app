@@ -12,8 +12,9 @@ export default function Nav() {
   const { language, setLanguage, t } = useLanguage()
 
   const links = [
-    { href: '/', label: t.nav.today },
     { href: '/goals', label: t.nav.goals },
+    { href: '/knowledge', label: t.nav.knowledge },
+    { href: '/habits', label: t.nav.habits },
     { href: '/review', label: t.nav.review },
     ...(isAdmin ? [{ href: '/admin', label: t.nav.admin }] : []),
   ]
@@ -22,19 +23,26 @@ export default function Nav() {
     const className = 'h-6 w-6'
 
     switch (href) {
-      case '/':
-        return (
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
-            <path d="M3 10.5 12 3l9 7.5" />
-            <path d="M5.25 9.75V21h13.5V9.75" />
-          </svg>
-        )
       case '/goals':
         return (
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
+            <path d="M5.25 6.75h13.5" />
+            <path d="M5.25 12h13.5" />
+            <path d="M5.25 17.25h9.75" />
+          </svg>
+        )
+      case '/knowledge':
+        return (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
+            <path d="M5.25 4.5h10.5a3 3 0 0 1 3 3v12h-12a1.5 1.5 0 0 0-1.5 1.5V6a1.5 1.5 0 0 1 1.5-1.5Z" />
+            <path d="M18.75 19.5h-12a1.5 1.5 0 0 0-1.5 1.5" />
+          </svg>
+        )
+      case '/habits':
+        return (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
+            <path d="m8.25 12 2.25 2.25 5.25-5.25" />
             <circle cx="12" cy="12" r="8.25" />
-            <path d="M12 12 17 7" />
-            <circle cx="12" cy="12" r="1.5" />
           </svg>
         )
       case '/review':
