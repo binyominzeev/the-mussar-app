@@ -11,6 +11,8 @@ interface Focus {
   description: string
   startDate: string
   endDate: string
+  isActive: boolean
+  sortOrder: number
 }
 
 interface Goal {
@@ -31,6 +33,7 @@ export default function GoalsPage() {
   const [showFocusForm, setShowFocusForm] = useState(false)
   const [editFocus, setEditFocus] = useState<FocusWithGoal | null>(null)
   const [newFocusType, setNewFocusType] = useState<GoalType>('knowledge')
+  const [draggedFocusId, setDraggedFocusId] = useState<string | null>(null)
 
   const focuses = useMemo(
     () =>
@@ -98,6 +101,48 @@ export default function GoalsPage() {
     await load()
   }
 
+  async function toggleFocusActive(focus: FocusWithGoal) {
+    await fetch(`/api/focuses/${focus.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isActive: !focus.isActive }),
+    })
+    await load()
+  }
+
+  async function reorderFocuses(draggedId: string, targetId: string) {
+    const dragged = focuses.find((focus) => focus.id === draggedId)
+    const target = focuses.find((focus) => focus.id === targetId)
+    if (!dragged || !target || dragged.id === target.id) return
+    if (dragged.goalId !== target.goalId) return
+
+    const siblings = focuses.filter((focus) => focus.goalId === dragged.goalId)
+    const fromIndex = siblings.findIndex((focus) => focus.id === dragged.id)
+    const toIndex = siblings.findIndex((focus) => focus.id === target.id)
+    if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) return
+
+    const reordered = [...siblings]
+    const [moved] = reordered.splice(fromIndex, 1)
+    reordered.splice(toIndex, 0, moved)
+
+    const changed = reordered
+      .map((focus, index) => ({ id: focus.id, nextSortOrder: index, currentSortOrder: focus.sortOrder }))
+      .filter((item) => item.currentSortOrder !== item.nextSortOrder)
+    if (changed.length === 0) return
+
+    await Promise.all(
+      changed.map((item) =>
+        fetch(`/api/focuses/${item.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sortOrder: item.nextSortOrder }),
+        })
+      )
+    )
+
+    await load()
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -125,17 +170,50 @@ export default function GoalsPage() {
       )}
 
       {focuses.map((focus) => (
-        <div key={focus.id} className="border border-gray-200 rounded-xl p-4 space-y-2">
+        <div
+          key={focus.id}
+          className={[
+            'border rounded-xl p-4 space-y-2',
+            editMode ? 'cursor-grab active:cursor-grabbing' : '',
+            focus.isActive ? 'border-gray-200 bg-white' : 'border-gray-300 bg-gray-50 opacity-70',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+          draggable={editMode}
+          onDragStart={() => setDraggedFocusId(focus.id)}
+          onDragOver={(event) => {
+            if (!editMode || !draggedFocusId) return
+            event.preventDefault()
+          }}
+          onDrop={async (event) => {
+            event.preventDefault()
+            if (!editMode || !draggedFocusId) return
+            await reorderFocuses(draggedFocusId, focus.id)
+            setDraggedFocusId(null)
+          }}
+          onDragEnd={() => setDraggedFocusId(null)}
+        >
           <div className="flex items-start justify-between">
             <div>
               <p className="text-[11px] uppercase tracking-wide text-gray-400 mb-1">
                 {focus.goalType === 'knowledge' ? t.goals.knowledge : t.goals.habits}
               </p>
-              <h2 className="font-medium">{focus.title}</h2>
+              <h2 className="font-medium">
+                {focus.title}
+                {!focus.isActive && (
+                  <span className="ml-2 text-[11px] uppercase tracking-wide text-gray-500">{t.goals.inactive}</span>
+                )}
+              </h2>
               <p className="text-sm text-gray-600 mt-0.5">{focus.description}</p>
             </div>
             {editMode && (
               <div className="flex gap-2 ml-3">
+                <button
+                  onClick={() => toggleFocusActive(focus)}
+                  className="text-xs text-gray-400 hover:text-gray-700"
+                >
+                  {focus.isActive ? t.goals.deactivate : t.goals.activate}
+                </button>
                 <button
                   onClick={() => {
                     setEditFocus(focus)

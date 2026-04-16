@@ -40,6 +40,8 @@ model Focus {
   description String
   startDate   DateTime
   endDate     DateTime
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())
 
   goal    Goal     @relation(fields: [goalId], references: [id])
