@@ -29,7 +29,7 @@ export default function LoginPage() {
     if (result?.error) {
       setError(t.login.invalidCredentials)
     } else {
-      router.push('/')
+      router.push('/goals')
     }
   }
 
