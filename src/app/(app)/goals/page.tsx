@@ -182,12 +182,12 @@ export default function GoalsPage() {
           draggable={editMode}
           onDragStart={() => setDraggedFocusId(focus.id)}
           onDragOver={(event) => {
-            if (!editMode || !draggedFocusId || draggedFocusId === focus.id) return
+            if (!editMode || !draggedFocusId) return
             event.preventDefault()
           }}
           onDrop={async (event) => {
             event.preventDefault()
-            if (!editMode || !draggedFocusId || draggedFocusId === focus.id) return
+            if (!editMode || !draggedFocusId) return
             await reorderFocuses(draggedFocusId, focus.id)
             setDraggedFocusId(null)
           }}

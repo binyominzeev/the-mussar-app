@@ -31,10 +31,6 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   if (typeof body.isActive === 'boolean') data.isActive = body.isActive
   if (typeof body.sortOrder === 'number') data.sortOrder = body.sortOrder
 
-  if (Object.keys(data).length === 0) {
-    return NextResponse.json({ error: 'No changes provided' }, { status: 400 })
-  }
-
   const updated = await prisma.focus.update({
     where: { id },
     data,
