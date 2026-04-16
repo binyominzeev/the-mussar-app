@@ -227,12 +227,9 @@ export default function GoalTypeDetails({ type, title }: { type: GoalType; title
               return (
                 <div key={action.id}>
                   <div className="p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <div>
-                        <p className="text-sm font-medium">{action.title}</p>
-                        <p className="text-xs text-gray-400">{action.type}</p>
-                      </div>
-                      {editMode && (
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-medium">{action.title}</p>
+                      {editMode ? (
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => {
@@ -247,17 +244,25 @@ export default function GoalTypeDetails({ type, title }: { type: GoalType; title
                             {t.goals.del}
                           </button>
                         </div>
-                      )}
+                      ) : action.type !== 'reflection' ? (
+                        <ActionCheckinEditor
+                          action={action}
+                          initialValue={checkin?.value || ''}
+                          onSave={(value) => saveCheckin(action.id, value)}
+                          reflectionPlaceholder={t.dashboard.writeReflection}
+                          compact
+                        />
+                      ) : null}
                     </div>
-
-                    {editMode ? null : (
-                      <ActionCheckinEditor
-                        action={action}
-                        initialValue={checkin?.value || ''}
-                        onSave={(value) => saveCheckin(action.id, value)}
-                        saveLabel={t.goals.save}
-                        reflectionPlaceholder={t.dashboard.writeReflection}
-                      />
+                    {!editMode && action.type === 'reflection' && (
+                      <div className="mt-2">
+                        <ActionCheckinEditor
+                          action={action}
+                          initialValue={checkin?.value || ''}
+                          onSave={(value) => saveCheckin(action.id, value)}
+                          reflectionPlaceholder={t.dashboard.writeReflection}
+                        />
+                      </div>
                     )}
                   </div>
 
@@ -324,14 +329,14 @@ function ActionCheckinEditor({
   action,
   initialValue,
   onSave,
-  saveLabel,
   reflectionPlaceholder,
+  compact,
 }: {
   action: Action
   initialValue: string
   onSave: (value: string | boolean) => void
-  saveLabel: string
   reflectionPlaceholder: string
+  compact?: boolean
 }) {
   const [value, setValue] = useState(initialValue)
 
@@ -343,49 +348,50 @@ function ActionCheckinEditor({
     const checked = value === 'true'
 
     return (
-      <div className="space-y-2">
-        <label className="inline-flex items-center gap-2 text-sm text-gray-700">
-          <input type="checkbox" checked={checked} onChange={(e) => setValue(String(e.target.checked))} className="w-4 h-4 rounded" />
-          <span>{checked ? '✓' : ''}</span>
-        </label>
-        <div>
-          <button onClick={() => onSave(value === 'true')} className="text-xs bg-gray-900 text-white rounded px-3 py-1.5 hover:bg-gray-700">
-            {saveLabel}
-          </button>
-        </div>
-      </div>
+      <label className={compact ? 'inline-flex items-center text-sm text-gray-700' : 'inline-flex items-center gap-2 text-sm text-gray-700'}>
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => {
+            const nextValue = String(e.target.checked)
+            setValue(nextValue)
+            onSave(e.target.checked)
+          }}
+          className="w-4 h-4 rounded"
+        />
+      </label>
     )
   }
 
   if (action.type === 'quantitative') {
     return (
-      <div className="flex items-end gap-2">
+      <div className={compact ? '' : 'flex items-end gap-2'}>
         <input
           type="number"
           value={value}
-          onChange={(e) => setValue(e.target.value)}
+          onChange={(e) => {
+            setValue(e.target.value)
+            onSave(e.target.value)
+          }}
           className="w-24 border border-gray-200 rounded px-2 py-1 text-sm text-right"
           placeholder="0"
         />
-        <button onClick={() => onSave(value)} className="text-xs bg-gray-900 text-white rounded px-3 py-1.5 hover:bg-gray-700">
-          {saveLabel}
-        </button>
       </div>
     )
   }
 
   return (
-    <div className="space-y-2">
+    <div>
       <textarea
         value={value}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => {
+          setValue(e.target.value)
+          onSave(e.target.value)
+        }}
         rows={2}
         className="w-full border border-gray-200 rounded p-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-gray-300"
         placeholder={reflectionPlaceholder}
       />
-      <button onClick={() => onSave(value)} className="text-xs bg-gray-900 text-white rounded px-3 py-1.5 hover:bg-gray-700">
-        {saveLabel}
-      </button>
     </div>
   )
 }
