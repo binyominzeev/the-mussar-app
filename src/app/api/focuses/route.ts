@@ -14,6 +14,11 @@ export async function POST(req: NextRequest) {
   const goal = await prisma.goal.findUnique({ where: { id: body.goalId } })
   if (!goal || goal.userId !== userId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
+  const maxOrder = await prisma.focus.aggregate({
+    where: { goalId: body.goalId },
+    _max: { sortOrder: true },
+  })
+
   const focus = await prisma.focus.create({
     data: {
       goalId: body.goalId,
@@ -21,6 +26,7 @@ export async function POST(req: NextRequest) {
       description: body.description,
       startDate: new Date(body.startDate),
       endDate: new Date(body.endDate),
+      sortOrder: (maxOrder._max.sortOrder ?? -1) + 1,
     },
   })
 

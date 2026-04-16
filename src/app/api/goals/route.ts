@@ -13,6 +13,7 @@ export async function GET() {
     where: { userId },
     include: {
       focuses: {
+        orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
         include: { actions: true },
       },
     },

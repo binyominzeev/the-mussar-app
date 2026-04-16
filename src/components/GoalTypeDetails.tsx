@@ -17,6 +17,8 @@ interface Focus {
   description: string
   startDate: string
   endDate: string
+  isActive: boolean
+  sortOrder: number
   actions: Action[]
 }
 
@@ -47,7 +49,10 @@ export default function GoalTypeDetails({ type, title }: { type: GoalType; title
 
   const typeGoals = useMemo(() => goals.filter((goal) => goal.type === type), [goals, type])
   const focuses = useMemo(
-    () => typeGoals.flatMap((goal) => goal.focuses.map((focus) => ({ ...focus, goalId: goal.id }))),
+    () =>
+      typeGoals.flatMap((goal) =>
+        goal.focuses.filter((focus) => focus.isActive).map((focus) => ({ ...focus, goalId: goal.id }))
+      ),
     [typeGoals]
   )
 

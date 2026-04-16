@@ -45,6 +45,9 @@ export interface Translations {
     addAction: string
     addFocus: string
     addFocusFor: string
+    activate: string
+    deactivate: string
+    inactive: string
     deleteGoalConfirm: string
     deleteFocusConfirm: string
     deleteActionConfirm: string
@@ -151,6 +154,9 @@ export const translations: Record<Language, Translations> = {
       addAction: '+ Add action',
       addFocus: '+ Add focus',
       addFocusFor: '+ Add focus',
+      activate: 'Activate',
+      deactivate: 'Deactivate',
+      inactive: 'Inactive',
       deleteGoalConfirm: 'Delete this goal?',
       deleteFocusConfirm: 'Delete this focus?',
       deleteActionConfirm: 'Delete this action?',
@@ -260,6 +266,9 @@ export const translations: Record<Language, Translations> = {
       addAction: '+ Cselekvés hozzáadása',
       addFocus: '+ Fókusz hozzáadása',
       addFocusFor: '+ Fókusz hozzáadása',
+      activate: 'Aktiválás',
+      deactivate: 'Kikapcsolás',
+      inactive: 'Inaktív',
       deleteGoalConfirm: 'Töröljük ezt a célt?',
       deleteFocusConfirm: 'Töröljük ezt a fókuszt?',
       deleteActionConfirm: 'Töröljük ezt a cselekvést?',

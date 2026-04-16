@@ -15,14 +15,29 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const focus = await prisma.focus.findUnique({ where: { id }, include: { goal: true } })
   if (!focus || focus.goal.userId !== userId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
+  const data: {
+    title?: string
+    description?: string
+    startDate?: Date
+    endDate?: Date
+    isActive?: boolean
+    sortOrder?: number
+  } = {}
+
+  if (typeof body.title === 'string') data.title = body.title
+  if (typeof body.description === 'string') data.description = body.description
+  if (body.startDate) data.startDate = new Date(body.startDate)
+  if (body.endDate) data.endDate = new Date(body.endDate)
+  if (typeof body.isActive === 'boolean') data.isActive = body.isActive
+  if (typeof body.sortOrder === 'number') data.sortOrder = body.sortOrder
+
+  if (Object.keys(data).length === 0) {
+    return NextResponse.json({ error: 'No changes provided' }, { status: 400 })
+  }
+
   const updated = await prisma.focus.update({
     where: { id },
-    data: {
-      title: body.title,
-      description: body.description,
-      startDate: new Date(body.startDate),
-      endDate: new Date(body.endDate),
-    },
+    data,
   })
 
   return NextResponse.json(updated)
