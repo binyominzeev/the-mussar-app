@@ -92,7 +92,9 @@ export default function Nav() {
                 <select
                   id="mentor-mode-select"
                   value={targetUser?.id ?? ''}
-                  onChange={(e) => void setTargetUserId(e.target.value || null)}
+                  onChange={(e) => {
+                    setTargetUserId(e.target.value || null).catch(() => {})
+                  }}
                   disabled={loading}
                   className="text-xs border border-gray-200 rounded px-2 py-1 bg-white"
                 >
@@ -137,7 +139,9 @@ export default function Nav() {
               <select
                 id="mentor-mode-select-mobile"
                 value={targetUser?.id ?? ''}
-                onChange={(e) => void setTargetUserId(e.target.value || null)}
+                onChange={(e) => {
+                  setTargetUserId(e.target.value || null).catch(() => {})
+                }}
                 disabled={loading}
                 className="text-xs border border-gray-200 rounded px-2 py-1 bg-white flex-1"
               >

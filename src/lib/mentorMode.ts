@@ -73,10 +73,14 @@ export async function getMentorAssignments(mentorId: string): Promise<Assignment
       : pair.partner
 
     if (!target || target.id === mentorId) continue
-    assignmentMap.set(target.id, { id: target.id, name: target.name, email: target.email })
+    assignmentMap.set(target.id, {
+      id: target.id,
+      name: target.name ?? '',
+      email: target.email ?? '',
+    })
   }
 
-  return Array.from(assignmentMap.values()).sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''))
+  return Array.from(assignmentMap.values()).sort((a, b) => a.name.localeCompare(b.name))
 }
 
 export async function getMentorModeTargetUserId(req: NextRequest, userId: string): Promise<string | null> {
