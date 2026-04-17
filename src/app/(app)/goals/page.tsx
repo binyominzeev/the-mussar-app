@@ -352,14 +352,19 @@ export default function GoalsPage() {
                    <th className="text-left font-medium text-gray-700 px-2 py-1.5 border-b border-gray-100">
                      <div className="inline-flex items-center gap-1.5">
                        {getGoalTypeIcon(row.goalType)}
+                       <span className="sr-only">{row.goalType === 'knowledge' ? t.goals.goalTypeKnowledge : t.goals.goalTypeHabits}</span>
                        <span>{row.title}</span>
                      </div>
                    </th>
                    {WEEKDAY_ORDER.map((day) => {
                      const isScheduled = row.weekdays.has(day)
                      return (
-                       <td key={day} className="px-2 py-1.5 border-b border-gray-100">
-                         <div className={`h-6 rounded ${getOverviewCellClass(row.goalType, isScheduled)}`} aria-hidden="true" />
+                        <td key={day} className="px-2 py-1.5 border-b border-gray-100">
+                         <div className={`h-6 rounded ${getOverviewCellClass(row.goalType, isScheduled)}`}>
+                           <span className="sr-only">
+                             {weekdayLabels[day]} {isScheduled ? t.goals.activate : t.goals.deactivate}
+                           </span>
+                         </div>
                        </td>
                      )
                    })}
