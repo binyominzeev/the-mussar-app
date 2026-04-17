@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { parseWeekdaysCsv, WEEKDAY_ORDER } from '@/lib/focusWeekdays'
+import { getWeekdayLabels, parseWeekdaysCsv, WEEKDAY_ORDER } from '@/lib/focusWeekdays'
 
 type GoalType = 'knowledge' | 'habits'
 
@@ -445,15 +445,7 @@ function FocusForm({
   const [startDate, setStartDate] = useState(initial?.startDate?.split('T')[0] || today)
   const [endDate, setEndDate] = useState(initial?.endDate?.split('T')[0] || thirtyDays)
   const [activeWeekdays, setActiveWeekdays] = useState<number[]>(() => parseWeekdaysCsv(initial?.activeWeekdays))
-  const weekdayLabels: Record<number, string> = {
-    1: t.weekdayMon,
-    2: t.weekdayTue,
-    3: t.weekdayWed,
-    4: t.weekdayThu,
-    5: t.weekdayFri,
-    6: t.weekdaySat,
-    0: t.weekdaySun,
-  }
+  const weekdayLabels = getWeekdayLabels(t)
 
   return (
     <div className="border border-gray-200 rounded-lg p-3 space-y-2 bg-white">

@@ -1,5 +1,16 @@
 export const ALL_WEEKDAYS = [0, 1, 2, 3, 4, 5, 6] as const
+// Monday-first order for rendering weekday toggles.
 export const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0] as const
+
+export interface WeekdayLabels {
+  weekdayMon: string
+  weekdayTue: string
+  weekdayWed: string
+  weekdayThu: string
+  weekdayFri: string
+  weekdaySat: string
+  weekdaySun: string
+}
 
 export function normalizeWeekdays(input: unknown): number[] {
   if (!Array.isArray(input)) return [...ALL_WEEKDAYS]
@@ -22,7 +33,14 @@ export function weekdaysToCsv(days: number[]): string {
   return normalizeWeekdays(days).join(',')
 }
 
-export function isWeekdayActive(activeWeekdaysCsv: string | null | undefined, date: Date): boolean {
-  const weekdays = parseWeekdaysCsv(activeWeekdaysCsv)
-  return weekdays.includes(date.getDay())
+export function getWeekdayLabels(labels: WeekdayLabels): Record<number, string> {
+  return {
+    1: labels.weekdayMon,
+    2: labels.weekdayTue,
+    3: labels.weekdayWed,
+    4: labels.weekdayThu,
+    5: labels.weekdayFri,
+    6: labels.weekdaySat,
+    0: labels.weekdaySun,
+  }
 }
