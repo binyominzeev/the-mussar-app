@@ -73,9 +73,14 @@ export default function GoalsPage() {
   }, [goals, t.goals.habits, t.goals.knowledge])
 
   function getOverviewCellClass(goalType: GoalType, count: number) {
-    if (count === 0) return 'bg-gray-50 text-gray-400'
-    if (goalType === 'knowledge') return count > 1 ? 'bg-blue-200 text-blue-900' : 'bg-blue-100 text-blue-800'
-    return count > 1 ? 'bg-emerald-200 text-emerald-900' : 'bg-emerald-100 text-emerald-800'
+    const markerClass =
+      goalType === 'knowledge'
+        ? 'border border-dashed border-blue-300'
+        : 'border border-solid border-emerald-300'
+
+    if (count === 0) return `${markerClass} bg-gray-50 text-gray-400`
+    if (goalType === 'knowledge') return `${markerClass} bg-blue-100 text-blue-800`
+    return `${markerClass} bg-emerald-100 text-emerald-800`
   }
 
   const load = useCallback(async () => {
