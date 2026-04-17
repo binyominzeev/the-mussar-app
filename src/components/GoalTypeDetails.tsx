@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { isWeekdayActive, parseWeekdaysCsv, WEEKDAY_ORDER } from '@/lib/focusWeekdays'
+import { parseWeekdaysCsv, WEEKDAY_ORDER } from '@/lib/focusWeekdays'
 
 type GoalType = 'knowledge' | 'habits'
 
@@ -48,21 +48,17 @@ export default function GoalTypeDetails({ type, title }: { type: GoalType; title
   const [showActionForm, setShowActionForm] = useState<string | null>(null)
   const [editAction, setEditAction] = useState<Action | null>(null)
   const today = new Date().toISOString().split('T')[0]
-  const todayDate = useMemo(() => {
-    const date = new Date()
-    date.setHours(12, 0, 0, 0)
-    return date
-  }, [today])
+  const todayWeekday = new Date().getDay()
 
   const typeGoals = useMemo(() => goals.filter((goal) => goal.type === type), [goals, type])
   const focuses = useMemo(
     () =>
       typeGoals.flatMap((goal) =>
         goal.focuses
-          .filter((focus) => focus.isActive && isWeekdayActive(focus.activeWeekdays, todayDate))
+          .filter((focus) => focus.isActive && parseWeekdaysCsv(focus.activeWeekdays).includes(todayWeekday))
           .map((focus) => ({ ...focus, goalId: goal.id }))
       ),
-    [todayDate, typeGoals]
+    [todayWeekday, typeGoals]
   )
 
   const load = useCallback(async () => {
