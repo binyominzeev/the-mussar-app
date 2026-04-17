@@ -32,7 +32,7 @@ export async function GET() {
 
     const key = [pair.userId, pair.partnerId].sort().join(':')
     if (!mutualByKey.has(key)) {
-      const shouldSwap = pair.user.name.localeCompare(pair.partner.name) > 0
+      const shouldSwap = (pair.user.name ?? '').localeCompare(pair.partner.name ?? '') > 0
       mutualByKey.set(key, shouldSwap
         ? { ...pair, userId: pair.partnerId, partnerId: pair.userId, user: pair.partner, partner: pair.user, type: normalizedType }
         : { ...pair, type: normalizedType })

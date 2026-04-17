@@ -287,7 +287,7 @@ export default function GoalTypeDetails({ type, title }: { type: GoalType; title
                           initialValue={checkin?.value || ''}
                           onSave={(value) => saveCheckin(action.id, value)}
                           reflectionPlaceholder={t.dashboard.writeReflection}
-                          readOnly={isMentorMode}
+                          isReadOnly={isMentorMode}
                           compact
                         />
                       ) : null}
@@ -299,7 +299,7 @@ export default function GoalTypeDetails({ type, title }: { type: GoalType; title
                           initialValue={checkin?.value || ''}
                           onSave={(value) => saveCheckin(action.id, value)}
                           reflectionPlaceholder={t.dashboard.writeReflection}
-                          readOnly={isMentorMode}
+                          isReadOnly={isMentorMode}
                         />
                       </div>
                     )}
@@ -369,14 +369,14 @@ function ActionCheckinEditor({
   initialValue,
   onSave,
   reflectionPlaceholder,
-  readOnly,
+  isReadOnly,
   compact,
 }: {
   action: Action
   initialValue: string
   onSave: (value: string | boolean) => void
   reflectionPlaceholder: string
-  readOnly?: boolean
+  isReadOnly?: boolean
   compact?: boolean
 }) {
   const [value, setValue] = useState(initialValue)
@@ -412,7 +412,7 @@ function ActionCheckinEditor({
     const checked = value === 'true'
     const binaryLabelClass = ['inline-flex items-center text-sm text-gray-700', compact ? '' : 'gap-2'].filter(Boolean).join(' ')
 
-    if (readOnly) {
+    if (isReadOnly) {
       return <span className="text-xs text-gray-500">{checked ? '✓' : '—'}</span>
     }
 
@@ -432,7 +432,7 @@ function ActionCheckinEditor({
   }
 
   if (action.type === 'quantitative') {
-    if (readOnly) {
+    if (isReadOnly) {
       return <span className="text-xs text-gray-500">{value || '—'}</span>
     }
 
@@ -454,7 +454,7 @@ function ActionCheckinEditor({
 
   return (
     <div>
-      {readOnly ? (
+      {isReadOnly ? (
         <p className="text-sm text-gray-600 whitespace-pre-wrap">{value || '—'}</p>
       ) : (
         <textarea

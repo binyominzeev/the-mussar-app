@@ -29,6 +29,7 @@ export default function AdminPage() {
   const [editUser, setEditUser] = useState<User | null>(null)
   const [showPairForm, setShowPairForm] = useState(false)
   const [tab, setTab] = useState<'users' | 'pairs'>('users')
+  const [pairError, setPairError] = useState('')
 
   useEffect(() => {
     if (session && !session.user?.isAdmin) {
@@ -77,9 +78,10 @@ export default function AdminPage() {
   async function savePair(data: any) {
     const res = await fetch('/api/admin/pairs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
     if (!res.ok) {
-      alert((await res.json()).error || 'Failed to save pair')
+      setPairError((await res.json()).error || 'Failed to save pair')
       return
     }
+    setPairError('')
     setShowPairForm(false)
     loadPairs()
   }
@@ -160,6 +162,7 @@ export default function AdminPage() {
               t={t.admin}
             />
           )}
+          {pairError && <p className="text-xs text-red-500">{pairError}</p>}
 
           <div className="space-y-2">
             {pairs.map((pair) => (
