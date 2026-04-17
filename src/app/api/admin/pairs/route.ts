@@ -35,7 +35,7 @@ export async function GET() {
       continue
     }
 
-    const key = [pair.userId, pair.partnerId].sort().join(':')
+    const key = [pair.userId, pair.partnerId].sort((a, b) => a.localeCompare(b)).join(':')
     if (!mutualByKey.has(key)) {
       const normalizedPair = normalizeMutualPairForDisplay({
         ...pair,

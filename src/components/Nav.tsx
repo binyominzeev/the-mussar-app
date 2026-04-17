@@ -93,7 +93,9 @@ export default function Nav() {
                   id="mentor-mode-select"
                   value={targetUser?.id ?? ''}
                   onChange={(e) => {
-                    setTargetUserId(e.target.value || null).catch(() => {})
+                    setTargetUserId(e.target.value || null).catch((error) => {
+                      console.error('Failed to switch mentor mode', error)
+                    })
                   }}
                   disabled={loading}
                   className="text-xs border border-gray-200 rounded px-2 py-1 bg-white"
@@ -140,7 +142,9 @@ export default function Nav() {
                 id="mentor-mode-select-mobile"
                 value={targetUser?.id ?? ''}
                 onChange={(e) => {
-                  setTargetUserId(e.target.value || null).catch(() => {})
+                  setTargetUserId(e.target.value || null).catch((error) => {
+                    console.error('Failed to switch mentor mode', error)
+                  })
                 }}
                 disabled={loading}
                 className="text-xs border border-gray-200 rounded px-2 py-1 bg-white flex-1"

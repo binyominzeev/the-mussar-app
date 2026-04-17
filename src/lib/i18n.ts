@@ -115,6 +115,8 @@ export interface Translations {
     cancel: string
     deleteUserConfirm: string
     deletePairConfirm: string
+    pairTypeChavruta: string
+    pairTypeCoach: string
     pairTypeMutualCoach: string
     pairTypeGeneralMentor: string
   }
@@ -245,6 +247,8 @@ export const translations: Record<Language, Translations> = {
       cancel: 'Cancel',
       deleteUserConfirm: 'Delete user?',
       deletePairConfirm: 'Remove pair?',
+      pairTypeChavruta: 'Chavruta',
+      pairTypeCoach: 'Coach',
       pairTypeMutualCoach: 'Mutual coaching pair',
       pairTypeGeneralMentor: 'General mentor',
     },
@@ -373,6 +377,8 @@ export const translations: Record<Language, Translations> = {
       cancel: 'Mégse',
       deleteUserConfirm: 'Töröljük a felhasználót?',
       deletePairConfirm: 'Eltávolítjuk a párt?',
+      pairTypeChavruta: 'Chavruta',
+      pairTypeCoach: 'Edző',
       pairTypeMutualCoach: 'Kölcsönös coaching pár',
       pairTypeGeneralMentor: 'Általános mentor',
     },
