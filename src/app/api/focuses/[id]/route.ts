@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { normalizeWeekdays, weekdaysToCsv } from '@/lib/focusWeekdays'
 import { prisma } from '@/lib/prisma'
 import { getSessionUserId } from '@/lib/session'
 
@@ -20,6 +21,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     description?: string
     startDate?: Date
     endDate?: Date
+    activeWeekdays?: string
     isActive?: boolean
     sortOrder?: number
   } = {}
@@ -28,6 +30,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   if (typeof body.description === 'string') data.description = body.description
   if (body.startDate) data.startDate = new Date(body.startDate)
   if (body.endDate) data.endDate = new Date(body.endDate)
+  if (Array.isArray(body.activeWeekdays)) data.activeWeekdays = weekdaysToCsv(normalizeWeekdays(body.activeWeekdays))
   if (typeof body.isActive === 'boolean') data.isActive = body.isActive
   if (typeof body.sortOrder === 'number') data.sortOrder = body.sortOrder
 
