@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { getWeekdayLabels, parseWeekdaysCsv, WEEKDAY_ORDER } from '@/lib/focusWeekdays'
 
 type GoalType = 'knowledge' | 'habits'
 
@@ -11,6 +12,7 @@ interface Focus {
   description: string
   startDate: string
   endDate: string
+  activeWeekdays: string
   isActive: boolean
   sortOrder: number
 }
@@ -74,7 +76,7 @@ export default function GoalsPage() {
     return created.id as string
   }
 
-  async function saveFocus(data: { title: string; description: string; startDate: string; endDate: string }, id?: string) {
+  async function saveFocus(data: { title: string; description: string; startDate: string; endDate: string; activeWeekdays: number[] }, id?: string) {
     if (id) {
       await fetch(`/api/focuses/${id}`, {
         method: 'PUT',
@@ -291,10 +293,10 @@ function FocusForm({
   onCancel,
   t,
 }: {
-  initial?: { title?: string; description?: string; startDate?: string; endDate?: string }
+  initial?: { title?: string; description?: string; startDate?: string; endDate?: string; activeWeekdays?: string }
   type?: GoalType
   onTypeChange?: (type: GoalType) => void
-  onSave: (data: { title: string; description: string; startDate: string; endDate: string }) => void
+  onSave: (data: { title: string; description: string; startDate: string; endDate: string; activeWeekdays: number[] }) => void
   onCancel: () => void
   t: ReturnType<typeof useLanguage>['t']['goals']
 }) {
@@ -305,6 +307,8 @@ function FocusForm({
   const [description, setDescription] = useState(initial?.description || '')
   const [startDate, setStartDate] = useState(initial?.startDate?.split('T')[0] || today)
   const [endDate, setEndDate] = useState(initial?.endDate?.split('T')[0] || thirtyDays)
+  const [activeWeekdays, setActiveWeekdays] = useState<number[]>(() => parseWeekdaysCsv(initial?.activeWeekdays))
+  const weekdayLabels = getWeekdayLabels(t)
 
   return (
     <div className="border border-gray-200 rounded-lg p-3 space-y-2 bg-white">
@@ -325,8 +329,31 @@ function FocusForm({
         <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="flex-1 border border-gray-200 rounded px-2 py-1.5 text-sm" />
         <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="flex-1 border border-gray-200 rounded px-2 py-1.5 text-sm" />
       </div>
+      <div className="space-y-1">
+        <p className="text-xs text-gray-500">{t.activeWeekdays}</p>
+        <div className="flex flex-wrap gap-1.5">
+          {WEEKDAY_ORDER.map((day) => {
+            const selected = activeWeekdays.includes(day)
+            return (
+              <button
+                key={day}
+                type="button"
+                onClick={() =>
+                  setActiveWeekdays((prev) => (prev.includes(day) ? prev.filter((value) => value !== day) : [...prev, day]))
+                }
+                className={[
+                  'text-xs rounded border px-2 py-1',
+                  selected ? 'bg-gray-900 border-gray-900 text-white' : 'bg-white border-gray-200 text-gray-600',
+                ].join(' ')}
+              >
+                {weekdayLabels[day]}
+              </button>
+            )
+          })}
+        </div>
+      </div>
       <div className="flex gap-2">
-        <button onClick={() => onSave({ title, description, startDate, endDate })} className="text-xs bg-gray-900 text-white rounded px-3 py-1.5 hover:bg-gray-700">{t.save}</button>
+        <button onClick={() => onSave({ title, description, startDate, endDate, activeWeekdays })} className="text-xs bg-gray-900 text-white rounded px-3 py-1.5 hover:bg-gray-700">{t.save}</button>
         <button onClick={onCancel} className="text-xs text-gray-500 px-3 py-1.5">{t.cancel}</button>
       </div>
     </div>

@@ -65,6 +65,14 @@ export interface Translations {
     actionTypeBinary: string
     actionTypeQuantitative: string
     actionTypeReflection: string
+    activeWeekdays: string
+    weekdayMon: string
+    weekdayTue: string
+    weekdayWed: string
+    weekdayThu: string
+    weekdayFri: string
+    weekdaySat: string
+    weekdaySun: string
   }
   review: {
     title: string
@@ -177,6 +185,14 @@ export const translations: Record<Language, Translations> = {
       actionTypeBinary: 'Binary (yes/no)',
       actionTypeQuantitative: 'Quantitative (number)',
       actionTypeReflection: 'Reflection (text)',
+      activeWeekdays: 'Active days',
+      weekdayMon: 'M',
+      weekdayTue: 'T',
+      weekdayWed: 'W',
+      weekdayThu: 'Th',
+      weekdayFri: 'F',
+      weekdaySat: 'Sa',
+      weekdaySun: 'Su',
     },
     // Review
     review: {
@@ -289,6 +305,14 @@ export const translations: Record<Language, Translations> = {
       actionTypeBinary: 'Bináris (igen/nem)',
       actionTypeQuantitative: 'Mennyiségi (szám)',
       actionTypeReflection: 'Reflexió (szöveg)',
+      activeWeekdays: 'Aktív napok',
+      weekdayMon: 'H',
+      weekdayTue: 'K',
+      weekdayWed: 'Sze',
+      weekdayThu: 'Cs',
+      weekdayFri: 'P',
+      weekdaySat: 'Szo',
+      weekdaySun: 'V',
     },
     // Review
     review: {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { normalizeWeekdays, weekdaysToCsv } from '@/lib/focusWeekdays'
 import { prisma } from '@/lib/prisma'
 import { getSessionUserId } from '@/lib/session'
 
@@ -26,6 +27,7 @@ export async function POST(req: NextRequest) {
       description: body.description,
       startDate: new Date(body.startDate),
       endDate: new Date(body.endDate),
+      activeWeekdays: weekdaysToCsv(normalizeWeekdays(body.activeWeekdays)),
       sortOrder: (maxOrder._max.sortOrder ?? -1) + 1,
     },
   })
