@@ -73,6 +73,9 @@ export interface Translations {
     weekdayFri: string
     weekdaySat: string
     weekdaySun: string
+    weeklyOverview: string
+    weeklyOverviewHint: string
+    noFocusesScheduled: string
   }
   review: {
     title: string
@@ -193,6 +196,9 @@ export const translations: Record<Language, Translations> = {
       weekdayFri: 'F',
       weekdaySat: 'Sa',
       weekdaySun: 'Su',
+      weeklyOverview: 'Weekly overview',
+      weeklyOverviewHint: 'Compare active focus counts per day to balance your weekly workload.',
+      noFocusesScheduled: '—',
     },
     // Review
     review: {
@@ -313,6 +319,9 @@ export const translations: Record<Language, Translations> = {
       weekdayFri: 'P',
       weekdaySat: 'Szo',
       weekdaySun: 'V',
+      weeklyOverview: 'Heti áttekintés',
+      weeklyOverviewHint: 'Hasonlítsd össze a napi aktív fókuszok számát, hogy kiegyensúlyozott legyen a terhelésed.',
+      noFocusesScheduled: '—',
     },
     // Review
     review: {
