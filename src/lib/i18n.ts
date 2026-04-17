@@ -197,7 +197,7 @@ export const translations: Record<Language, Translations> = {
       weekdaySat: 'Sa',
       weekdaySun: 'Su',
       weeklyOverview: 'Weekly overview',
-      weeklyOverviewHint: 'Compare active focus counts per day to balance your weekly workload.',
+      weeklyOverviewHint: 'See each active focus line-by-line and use colors to track its weekly schedule.',
       noFocusesScheduled: '—',
     },
     // Review
@@ -320,7 +320,7 @@ export const translations: Record<Language, Translations> = {
       weekdaySat: 'Szo',
       weekdaySun: 'V',
       weeklyOverview: 'Heti áttekintés',
-      weeklyOverviewHint: 'Hasonlítsd össze a napi aktív fókuszok számát, hogy kiegyensúlyozott legyen a terhelésed.',
+      weeklyOverviewHint: 'Nézd meg az aktív fókuszokat soronként, és használd a színeket a heti beosztás követéséhez.',
       noFocusesScheduled: '—',
     },
     // Review
