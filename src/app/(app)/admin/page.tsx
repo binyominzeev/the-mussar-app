@@ -171,7 +171,7 @@ export default function AdminPage() {
                     <span className="font-medium">{pair.partner.name}</span>
                   </p>
                   <p className="text-xs text-gray-400">
-                    {pair.type === 'general_mentor' ? t.pairTypeGeneralMentor : t.pairTypeMutualCoach}
+                    {pair.type === 'general_mentor' ? t.admin.pairTypeGeneralMentor : t.admin.pairTypeMutualCoach}
                   </p>
                 </div>
                 <button onClick={() => deletePair(pair.id)} className="text-xs text-red-400 hover:text-red-600">{t.admin.remove}</button>
