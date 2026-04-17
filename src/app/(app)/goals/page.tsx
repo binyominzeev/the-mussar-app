@@ -48,6 +48,40 @@ export default function GoalsPage() {
       ),
     [goals]
   )
+  const weekdayLabels = useMemo(() => getWeekdayLabels(t.goals), [t.goals])
+  const weeklyOverview = useMemo(() => {
+    const goalTypeOrder: GoalType[] = ['knowledge', 'habits']
+
+    return goalTypeOrder.map((goalType) => {
+      const goal = goals.find((item) => item.type === goalType)
+      const activeFocuses = (goal?.focuses ?? []).filter((focus) => focus.isActive)
+      const counts = Object.fromEntries(WEEKDAY_ORDER.map((day) => [day, 0])) as Record<number, number>
+
+      for (const focus of activeFocuses) {
+        const weekdays = parseWeekdaysCsv(focus.activeWeekdays)
+        for (const weekday of weekdays) {
+          counts[weekday] += 1
+        }
+      }
+
+      return {
+        goalType,
+        label: goalType === 'knowledge' ? t.goals.knowledge : t.goals.habits,
+        counts,
+      }
+    })
+  }, [goals, t.goals.habits, t.goals.knowledge])
+
+  function getOverviewCellClass(goalType: GoalType, count: number) {
+    const markerClass =
+      goalType === 'knowledge'
+        ? 'border border-dashed border-blue-300'
+        : 'border border-solid border-emerald-300'
+
+    if (count === 0) return `${markerClass} bg-gray-50 text-gray-400`
+    if (goalType === 'knowledge') return `${markerClass} bg-blue-100 text-blue-800`
+    return `${markerClass} bg-emerald-100 text-emerald-800`
+  }
 
   const load = useCallback(async () => {
     const res = await fetch('/api/goals')
@@ -281,6 +315,46 @@ export default function GoalsPage() {
           )}
         </>
       )}
+
+      <section className="border border-gray-200 rounded-xl p-4 space-y-3 bg-white">
+        <div>
+          <h2 className="text-sm font-medium">{t.goals.weeklyOverview}</h2>
+          <p className="text-xs text-gray-500 mt-1">{t.goals.weeklyOverviewHint}</p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-xs border-collapse">
+            <thead>
+              <tr>
+                <th className="text-left font-medium text-gray-500 px-2 py-1.5 border-b border-gray-100" />
+                {WEEKDAY_ORDER.map((day) => (
+                  <th key={day} className="text-center font-medium text-gray-500 px-2 py-1.5 border-b border-gray-100">
+                    {weekdayLabels[day]}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {weeklyOverview.map((row) => (
+                <tr key={row.goalType}>
+                  <th className="text-left font-medium text-gray-700 px-2 py-1.5 border-b border-gray-100">
+                    {row.label}
+                  </th>
+                  {WEEKDAY_ORDER.map((day) => {
+                    const count = row.counts[day]
+                    return (
+                      <td key={day} className="px-2 py-1.5 border-b border-gray-100">
+                        <div className={`rounded px-2 py-1 text-center font-medium ${getOverviewCellClass(row.goalType, count)}`}>
+                          {count > 0 ? count : t.goals.noFocusesScheduled}
+                        </div>
+                      </td>
+                    )
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
   )
 }
