@@ -75,7 +75,11 @@ export default function AdminPage() {
   }
 
   async function savePair(data: any) {
-    await fetch('/api/admin/pairs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+    const res = await fetch('/api/admin/pairs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+    if (!res.ok) {
+      alert((await res.json()).error || 'Failed to save pair')
+      return
+    }
     setShowPairForm(false)
     loadPairs()
   }
@@ -163,10 +167,12 @@ export default function AdminPage() {
                 <div>
                   <p className="text-sm">
                     <span className="font-medium">{pair.user.name}</span>
-                    <span className="text-gray-400 mx-2">↔</span>
+                    <span className="text-gray-400 mx-2">{pair.type === 'general_mentor' ? '→' : '↔'}</span>
                     <span className="font-medium">{pair.partner.name}</span>
                   </p>
-                  <p className="text-xs text-gray-400">{pair.type}</p>
+                  <p className="text-xs text-gray-400">
+                    {pair.type === 'general_mentor' ? t.pairTypeGeneralMentor : t.pairTypeMutualCoach}
+                  </p>
                 </div>
                 <button onClick={() => deletePair(pair.id)} className="text-xs text-red-400 hover:text-red-600">{t.admin.remove}</button>
               </div>
@@ -226,7 +232,7 @@ function PairForm({
 }) {
   const [userId, setUserId] = useState(users[0]?.id || '')
   const [partnerId, setPartnerId] = useState(users[1]?.id || '')
-  const [type, setType] = useState('chavruta')
+  const [type, setType] = useState('mutual_coach')
 
   return (
     <div className="border border-gray-200 rounded-xl p-4 space-y-3 bg-gray-50">
@@ -238,11 +244,17 @@ function PairForm({
         {users.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
       </select>
       <select value={type} onChange={(e) => setType(e.target.value)} className="w-full border border-gray-200 rounded px-2 py-1.5 text-sm">
-        <option value="chavruta">{t.pairTypeChavruta}</option>
-        <option value="coach">{t.pairTypeCoach}</option>
+        <option value="mutual_coach">{t.pairTypeMutualCoach}</option>
+        <option value="general_mentor">{t.pairTypeGeneralMentor}</option>
       </select>
       <div className="flex gap-2">
-        <button onClick={() => onSave({ userId, partnerId, type })} className="text-xs bg-gray-900 text-white rounded px-3 py-1.5">{t.save}</button>
+        <button
+          onClick={() => onSave({ userId, partnerId, type })}
+          disabled={!userId || !partnerId || userId === partnerId}
+          className="text-xs bg-gray-900 text-white rounded px-3 py-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {t.save}
+        </button>
         <button onClick={onCancel} className="text-xs text-gray-500 px-3 py-1.5">{t.cancel}</button>
       </div>
     </div>

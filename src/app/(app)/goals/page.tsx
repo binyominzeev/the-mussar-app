@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { useMentorMode } from '@/contexts/MentorModeContext'
 import { getWeekdayLabels, parseWeekdaysCsv, WEEKDAY_ORDER } from '@/lib/focusWeekdays'
 
 type GoalType = 'knowledge' | 'habits'
@@ -30,6 +31,7 @@ interface FocusWithGoal extends Focus {
 
 export default function GoalsPage() {
   const { t } = useLanguage()
+  const { isMentorMode } = useMentorMode()
   const [goals, setGoals] = useState<Goal[]>([])
   const [editMode, setEditMode] = useState(false)
   const [showFocusForm, setShowFocusForm] = useState(false)
@@ -104,6 +106,13 @@ export default function GoalsPage() {
   useEffect(() => {
     load()
   }, [load])
+
+  useEffect(() => {
+    if (!isMentorMode) return
+    setEditMode(false)
+    setShowFocusForm(false)
+    setEditFocus(null)
+  }, [isMentorMode])
 
   async function ensureGoalId(type: GoalType) {
     const existing = goals.find((goal) => goal.type === type)
@@ -196,36 +205,39 @@ export default function GoalsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">{t.goals.title}</h1>
-        <button
-          type="button"
-          onClick={() => {
-            setEditMode((prev) => !prev)
-            setShowFocusForm(false)
-            setEditFocus(null)
-          }}
-          className={[
-            'inline-flex items-center gap-2 text-xs border rounded-lg px-2.5 py-1.5 transition-colors',
-            editMode
-              ? 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100'
-              : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50',
-          ].join(' ')}
-          aria-label={editMode ? t.goals.editModeOn : t.goals.editModeOff}
-          aria-pressed={editMode}
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4" aria-hidden="true">
-            <path d="M4.5 19.5h3.75l9.75-9.75-3.75-3.75L4.5 15.75V19.5Z" />
-            <path d="m13.5 6 3.75 3.75" />
-          </svg>
-          <span
+        {!isMentorMode && (
+          <button
+            type="button"
+            onClick={() => {
+              setEditMode((prev) => !prev)
+              setShowFocusForm(false)
+              setEditFocus(null)
+            }}
             className={[
-              'h-2.5 w-2.5 rounded-full',
-              editMode ? 'bg-amber-500' : 'bg-gray-300',
+              'inline-flex items-center gap-2 text-xs border rounded-lg px-2.5 py-1.5 transition-colors',
+              editMode
+                ? 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100'
+                : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50',
             ].join(' ')}
-            aria-hidden="true"
-          />
-          <span className="sr-only">{editMode ? t.goals.editModeOn : t.goals.editModeOff}</span>
-        </button>
+            aria-label={editMode ? t.goals.editModeOn : t.goals.editModeOff}
+            aria-pressed={editMode}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4" aria-hidden="true">
+              <path d="M4.5 19.5h3.75l9.75-9.75-3.75-3.75L4.5 15.75V19.5Z" />
+              <path d="m13.5 6 3.75 3.75" />
+            </svg>
+            <span
+              className={[
+                'h-2.5 w-2.5 rounded-full',
+                editMode ? 'bg-amber-500' : 'bg-gray-300',
+              ].join(' ')}
+              aria-hidden="true"
+            />
+            <span className="sr-only">{editMode ? t.goals.editModeOn : t.goals.editModeOff}</span>
+          </button>
+        )}
       </div>
+      {isMentorMode && <p className="text-xs text-amber-600">{t.goals.readOnlyMentorMode}</p>}
 
       {focuses.length === 0 && !showFocusForm && (
         <p className="text-gray-400 text-sm text-center py-8">{t.goals.noFocuses}</p>
