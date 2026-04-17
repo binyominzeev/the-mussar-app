@@ -338,7 +338,7 @@ export default function GoalsPage() {
                     const count = row.counts[day]
                     return (
                       <td key={day} className="px-2 py-1.5 border-b border-gray-100">
-                        <div className={['rounded px-2 py-1 text-center font-medium', getOverviewCellClass(row.goalType, count)].join(' ')}>
+                        <div className={`rounded px-2 py-1 text-center font-medium ${getOverviewCellClass(row.goalType, count)}`}>
                           {count > 0 ? count : t.goals.noFocusesScheduled}
                         </div>
                       </td>
