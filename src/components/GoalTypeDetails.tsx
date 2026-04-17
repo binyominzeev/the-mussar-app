@@ -171,14 +171,27 @@ export default function GoalTypeDetails({ type, title }: { type: GoalType; title
             setShowActionForm(null)
             setEditAction(null)
           }}
-          className="inline-flex items-center gap-2 text-xs border border-gray-300 rounded-lg px-2.5 py-1.5 text-gray-700 hover:bg-gray-50"
+          className={[
+            'inline-flex items-center gap-2 text-xs border rounded-lg px-2.5 py-1.5 transition-colors',
+            editMode
+              ? 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100'
+              : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50',
+          ].join(' ')}
           aria-label={editMode ? t.goals.editModeOn : t.goals.editModeOff}
+          aria-pressed={editMode}
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4" aria-hidden="true">
             <path d="M4.5 19.5h3.75l9.75-9.75-3.75-3.75L4.5 15.75V19.5Z" />
             <path d="m13.5 6 3.75 3.75" />
           </svg>
-          <span>{editMode ? t.goals.editModeOn : t.goals.editModeOff}</span>
+          <span
+            className={[
+              'h-2.5 w-2.5 rounded-full',
+              editMode ? 'bg-amber-500' : 'bg-gray-300',
+            ].join(' ')}
+            aria-hidden="true"
+          />
+          <span className="sr-only">{editMode ? t.goals.editModeOn : t.goals.editModeOff}</span>
         </button>
       </div>
 
