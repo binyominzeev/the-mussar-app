@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { getWeekdayLabels, parseWeekdaysCsv, WEEKDAY_ORDER } from '@/lib/focusWeekdays'
+import { parseWeekdaysCsv } from '@/lib/focusWeekdays'
 
 type GoalType = 'knowledge' | 'habits'
 
@@ -457,8 +457,7 @@ function FocusForm({
   const [description, setDescription] = useState(initial?.description || '')
   const [startDate, setStartDate] = useState(initial?.startDate?.split('T')[0] || today)
   const [endDate, setEndDate] = useState(initial?.endDate?.split('T')[0] || thirtyDays)
-  const [activeWeekdays, setActiveWeekdays] = useState<number[]>(() => parseWeekdaysCsv(initial?.activeWeekdays))
-  const weekdayLabels = getWeekdayLabels(t)
+  const activeWeekdays = useMemo(() => parseWeekdaysCsv(initial?.activeWeekdays), [initial?.activeWeekdays])
 
   return (
     <div className="border border-gray-200 rounded-lg p-3 space-y-2 bg-white">
@@ -468,29 +467,6 @@ function FocusForm({
       <div className="flex gap-2">
         <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="flex-1 border border-gray-200 rounded px-2 py-1.5 text-sm" />
         <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="flex-1 border border-gray-200 rounded px-2 py-1.5 text-sm" />
-      </div>
-      <div className="space-y-1">
-        <p className="text-xs text-gray-500">{t.activeWeekdays}</p>
-        <div className="flex flex-wrap gap-1.5">
-          {WEEKDAY_ORDER.map((day) => {
-            const selected = activeWeekdays.includes(day)
-            return (
-              <button
-                key={day}
-                type="button"
-                onClick={() =>
-                  setActiveWeekdays((prev) => (prev.includes(day) ? prev.filter((value) => value !== day) : [...prev, day]))
-                }
-                className={[
-                  'text-xs rounded border px-2 py-1',
-                  selected ? 'bg-gray-900 border-gray-900 text-white' : 'bg-white border-gray-200 text-gray-600',
-                ].join(' ')}
-              >
-                {weekdayLabels[day]}
-              </button>
-            )
-          })}
-        </div>
       </div>
       <div className="flex gap-2">
         <button onClick={() => onSave({ title, description, startDate, endDate, activeWeekdays })} className="text-xs bg-gray-900 text-white rounded px-3 py-1.5 hover:bg-gray-700">{t.save}</button>
