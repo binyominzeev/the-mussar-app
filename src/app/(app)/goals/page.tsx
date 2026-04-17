@@ -52,35 +52,48 @@ export default function GoalsPage() {
   const weeklyOverview = useMemo(() => {
     const goalTypeOrder: GoalType[] = ['knowledge', 'habits']
 
-    return goalTypeOrder.map((goalType) => {
+    return goalTypeOrder.flatMap((goalType) => {
       const goal = goals.find((item) => item.type === goalType)
-      const activeFocuses = (goal?.focuses ?? []).filter((focus) => focus.isActive)
-      const counts = Object.fromEntries(WEEKDAY_ORDER.map((day) => [day, 0])) as Record<number, number>
+      const activeFocuses = (goal?.focuses ?? [])
+        .filter((focus) => focus.isActive)
+        .sort((a, b) => a.sortOrder - b.sortOrder)
 
-      for (const focus of activeFocuses) {
-        const weekdays = parseWeekdaysCsv(focus.activeWeekdays)
-        for (const weekday of weekdays) {
-          counts[weekday] += 1
-        }
-      }
-
-      return {
+      return activeFocuses.map((focus) => ({
+        id: focus.id,
+        title: focus.title,
         goalType,
-        label: goalType === 'knowledge' ? t.goals.knowledge : t.goals.habits,
-        counts,
-      }
+        weekdays: new Set(parseWeekdaysCsv(focus.activeWeekdays)),
+      }))
     })
-  }, [goals, t.goals.habits, t.goals.knowledge])
+  }, [goals])
 
-  function getOverviewCellClass(goalType: GoalType, count: number) {
+  function getOverviewCellClass(goalType: GoalType, isScheduled: boolean) {
     const markerClass =
       goalType === 'knowledge'
         ? 'border border-dashed border-blue-300'
         : 'border border-solid border-emerald-300'
 
-    if (count === 0) return `${markerClass} bg-gray-50 text-gray-400`
-    if (goalType === 'knowledge') return `${markerClass} bg-blue-100 text-blue-800`
-    return `${markerClass} bg-emerald-100 text-emerald-800`
+    if (!isScheduled) return `${markerClass} bg-gray-50`
+    if (goalType === 'knowledge') return `${markerClass} bg-blue-100`
+    return `${markerClass} bg-emerald-100`
+  }
+
+  function getGoalTypeIcon(goalType: GoalType) {
+    if (goalType === 'knowledge') {
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3.5 w-3.5 text-blue-700" aria-hidden="true">
+          <path d="M5.25 4.5h10.5a3 3 0 0 1 3 3v12h-12a1.5 1.5 0 0 0-1.5 1.5V6a1.5 1.5 0 0 1 1.5-1.5Z" />
+          <path d="M18.75 19.5h-12a1.5 1.5 0 0 0-1.5 1.5" />
+        </svg>
+      )
+    }
+
+    return (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3.5 w-3.5 text-emerald-700" aria-hidden="true">
+        <path d="m8.25 12 2.25 2.25 5.25-5.25" />
+        <circle cx="12" cy="12" r="8.25" />
+      </svg>
+    )
   }
 
   const load = useCallback(async () => {
@@ -333,22 +346,28 @@ export default function GoalsPage() {
                 ))}
               </tr>
             </thead>
-            <tbody>
-              {weeklyOverview.map((row) => (
-                <tr key={row.goalType}>
-                  <th className="text-left font-medium text-gray-700 px-2 py-1.5 border-b border-gray-100">
-                    {row.label}
-                  </th>
-                  {WEEKDAY_ORDER.map((day) => {
-                    const count = row.counts[day]
-                    return (
-                      <td key={day} className="px-2 py-1.5 border-b border-gray-100">
-                        <div className={`rounded px-2 py-1 text-center font-medium ${getOverviewCellClass(row.goalType, count)}`}>
-                          {count > 0 ? count : t.goals.noFocusesScheduled}
-                        </div>
-                      </td>
-                    )
-                  })}
+              <tbody>
+               {weeklyOverview.map((row) => (
+                 <tr key={row.id}>
+                   <th className="text-left font-medium text-gray-700 px-2 py-1.5 border-b border-gray-100">
+                     <div className="inline-flex items-center gap-1.5">
+                       {getGoalTypeIcon(row.goalType)}
+                       <span className="sr-only">{row.goalType === 'knowledge' ? t.goals.goalTypeKnowledge : t.goals.goalTypeHabits}</span>
+                       <span>{row.title}</span>
+                     </div>
+                   </th>
+                   {WEEKDAY_ORDER.map((day) => {
+                     const isScheduled = row.weekdays.has(day)
+                     return (
+                        <td key={day} className="px-2 py-1.5 border-b border-gray-100">
+                         <div className={`h-6 rounded ${getOverviewCellClass(row.goalType, isScheduled)}`}>
+                           <span className="sr-only">
+                             {weekdayLabels[day]} {isScheduled ? t.goals.activate : t.goals.deactivate}
+                           </span>
+                         </div>
+                       </td>
+                     )
+                   })}
                 </tr>
               ))}
             </tbody>
