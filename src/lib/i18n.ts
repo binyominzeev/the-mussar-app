@@ -7,6 +7,9 @@ export interface Translations {
     habits: string
     review: string
     admin: string
+    mentorMode: string
+    myWorkspace: string
+    mentorReadOnly: string
     signOut: string
   }
   login: {
@@ -76,6 +79,7 @@ export interface Translations {
     weeklyOverview: string
     weeklyOverviewHint: string
     noFocusesScheduled: string
+    readOnlyMentorMode: string
   }
   review: {
     title: string
@@ -87,6 +91,7 @@ export interface Translations {
     weeklyReflection: string
     reflectionPlaceholder: string
     saveReflection: string
+    readOnlyMentorMode: string
   }
   admin: {
     title: string
@@ -112,6 +117,8 @@ export interface Translations {
     deletePairConfirm: string
     pairTypeChavruta: string
     pairTypeCoach: string
+    pairTypeMutualCoach: string
+    pairTypeGeneralMentor: string
   }
 }
 
@@ -124,6 +131,9 @@ export const translations: Record<Language, Translations> = {
       habits: 'Habits',
       review: 'Overview',
       admin: 'Admin',
+      mentorMode: 'Mentor mode',
+      myWorkspace: 'My workspace',
+      mentorReadOnly: 'Read-only mentor view',
       signOut: 'Sign out',
     },
     // Login
@@ -199,6 +209,7 @@ export const translations: Record<Language, Translations> = {
       weeklyOverview: 'Weekly overview',
       weeklyOverviewHint: 'See each active focus line-by-line and use colors to track its weekly schedule.',
       noFocusesScheduled: '—',
+      readOnlyMentorMode: 'Mentor mode is read-only. Switch back to your workspace to edit.',
     },
     // Review
     review: {
@@ -211,6 +222,7 @@ export const translations: Record<Language, Translations> = {
       weeklyReflection: 'Weekly reflection',
       reflectionPlaceholder: 'What went well? What needs improvement? What will you focus on next week?',
       saveReflection: 'Save reflection',
+      readOnlyMentorMode: 'Mentor mode is read-only.',
     },
     // Admin
     admin: {
@@ -237,6 +249,8 @@ export const translations: Record<Language, Translations> = {
       deletePairConfirm: 'Remove pair?',
       pairTypeChavruta: 'Chavruta',
       pairTypeCoach: 'Coach',
+      pairTypeMutualCoach: 'Mutual coaching pair',
+      pairTypeGeneralMentor: 'General mentor',
     },
   },
   hu: {
@@ -247,6 +261,9 @@ export const translations: Record<Language, Translations> = {
       habits: 'Szokások',
       review: 'Áttekintés',
       admin: 'Admin',
+      mentorMode: 'Mentor mód',
+      myWorkspace: 'Saját felület',
+      mentorReadOnly: 'Csak olvasható mentor nézet',
       signOut: 'Kijelentkezés',
     },
     // Login
@@ -322,6 +339,7 @@ export const translations: Record<Language, Translations> = {
       weeklyOverview: 'Heti áttekintés',
       weeklyOverviewHint: 'Nézd meg az aktív fókuszokat soronként, és használd a színeket a heti beosztás követéséhez.',
       noFocusesScheduled: '—',
+      readOnlyMentorMode: 'A mentor mód csak olvasható. Váltás a saját felületre szerkesztéshez.',
     },
     // Review
     review: {
@@ -334,6 +352,7 @@ export const translations: Record<Language, Translations> = {
       weeklyReflection: 'Heti reflexió',
       reflectionPlaceholder: 'Mi ment jól? Min kell javítani? Mire fogsz koncentrálni jövő héten?',
       saveReflection: 'Reflexió mentése',
+      readOnlyMentorMode: 'A mentor mód csak olvasható.',
     },
     // Admin
     admin: {
@@ -360,6 +379,8 @@ export const translations: Record<Language, Translations> = {
       deletePairConfirm: 'Eltávolítjuk a párt?',
       pairTypeChavruta: 'Chavruta',
       pairTypeCoach: 'Edző',
+      pairTypeMutualCoach: 'Kölcsönös coaching pár',
+      pairTypeGeneralMentor: 'Általános mentor',
     },
   },
 }

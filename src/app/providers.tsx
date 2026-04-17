@@ -2,6 +2,7 @@
 
 import { SessionProvider } from 'next-auth/react'
 import { LanguageProvider } from '@/contexts/LanguageContext'
+import { MentorModeProvider } from '@/contexts/MentorModeContext'
 import { useEffect, useState } from 'react'
 
 const ONE_HOUR_IN_SECONDS = 60 * 60
@@ -26,7 +27,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <SessionProvider refetchInterval={isStandalonePwa ? ONE_HOUR_IN_SECONDS : 0}>
-      <LanguageProvider>{children}</LanguageProvider>
+      <LanguageProvider>
+        <MentorModeProvider>{children}</MentorModeProvider>
+      </LanguageProvider>
     </SessionProvider>
   )
 }

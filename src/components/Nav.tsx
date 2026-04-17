@@ -4,12 +4,14 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { useMentorMode } from '@/contexts/MentorModeContext'
 
 export default function Nav() {
   const pathname = usePathname()
   const { data: session } = useSession()
   const isAdmin = session?.user?.isAdmin
   const { language, setLanguage, t } = useLanguage()
+  const { assignees, hasMentorAccess, isMentorMode, targetUser, setTargetUserId, loading } = useMentorMode()
 
   const links = [
     { href: '/goals', label: t.nav.goals },
@@ -84,6 +86,28 @@ export default function Nav() {
             ))}
           </div>
           <div className="flex items-center gap-3">
+            {hasMentorAccess && (
+              <div className="flex items-center gap-2">
+                <label htmlFor="mentor-mode-select" className="text-xs text-gray-500">{t.nav.mentorMode}</label>
+                <select
+                  id="mentor-mode-select"
+                  value={targetUser?.id ?? ''}
+                  onChange={(e) => {
+                    setTargetUserId(e.target.value || null).catch((error) => {
+                      console.error('Failed to switch mentor mode', error)
+                    })
+                  }}
+                  disabled={loading}
+                  className="text-xs border border-gray-200 rounded px-2 py-1 bg-white"
+                >
+                  <option value="">{t.nav.myWorkspace}</option>
+                  {assignees.map((assignee) => (
+                    <option key={assignee.id} value={assignee.id}>{assignee.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {isMentorMode && <span className="text-[11px] text-amber-600">{t.nav.mentorReadOnly}</span>}
             <div className="flex items-center gap-1 text-xs">
               <button
                 onClick={() => setLanguage('en')}
@@ -110,7 +134,30 @@ export default function Nav() {
       </nav>
 
       <div className="md:hidden border-b border-gray-200 bg-white sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto px-4 h-12 flex items-center justify-between">
+        <div className="max-w-2xl mx-auto px-4 py-2 space-y-2">
+          {hasMentorAccess && (
+            <div className="flex items-center gap-2">
+              <label htmlFor="mentor-mode-select-mobile" className="text-[11px] text-gray-500">{t.nav.mentorMode}</label>
+              <select
+                id="mentor-mode-select-mobile"
+                value={targetUser?.id ?? ''}
+                onChange={(e) => {
+                  setTargetUserId(e.target.value || null).catch((error) => {
+                    console.error('Failed to switch mentor mode', error)
+                  })
+                }}
+                disabled={loading}
+                className="text-xs border border-gray-200 rounded px-2 py-1 bg-white flex-1"
+              >
+                <option value="">{t.nav.myWorkspace}</option>
+                {assignees.map((assignee) => (
+                  <option key={assignee.id} value={assignee.id}>{assignee.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+          {isMentorMode && <p className="text-[11px] text-amber-600">{t.nav.mentorReadOnly}</p>}
+          <div className="h-8 flex items-center justify-between">
           <div className="flex items-center gap-1 text-xs">
             <button
               onClick={() => setLanguage('en')}
@@ -132,6 +179,7 @@ export default function Nav() {
           >
             {t.nav.signOut}
           </button>
+          </div>
         </div>
       </div>
 

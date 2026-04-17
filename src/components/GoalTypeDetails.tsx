@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { useMentorMode } from '@/contexts/MentorModeContext'
 import { parseWeekdaysCsv } from '@/lib/focusWeekdays'
 
 type GoalType = 'knowledge' | 'habits'
@@ -40,6 +41,7 @@ interface Checkin {
 
 export default function GoalTypeDetails({ type, title }: { type: GoalType; title: string }) {
   const { t } = useLanguage()
+  const { isMentorMode } = useMentorMode()
   const [goals, setGoals] = useState<Goal[]>([])
   const [checkins, setCheckins] = useState<Checkin[]>([])
   const [editMode, setEditMode] = useState(false)
@@ -75,6 +77,15 @@ export default function GoalTypeDetails({ type, title }: { type: GoalType; title
   useEffect(() => {
     load()
   }, [load])
+
+  useEffect(() => {
+    if (!isMentorMode) return
+    setEditMode(false)
+    setShowFocusForm(false)
+    setEditFocus(null)
+    setShowActionForm(null)
+    setEditAction(null)
+  }, [isMentorMode])
 
   const getCheckin = (actionId: string) => checkins.find((c) => c.actionId === actionId)
 
@@ -167,38 +178,41 @@ export default function GoalTypeDetails({ type, title }: { type: GoalType; title
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">{title}</h1>
-        <button
-          type="button"
-          onClick={() => {
-            setEditMode((prev) => !prev)
-            setShowFocusForm(false)
-            setEditFocus(null)
-            setShowActionForm(null)
-            setEditAction(null)
-          }}
-          className={[
-            'inline-flex items-center gap-2 text-xs border rounded-lg px-2.5 py-1.5 transition-colors',
-            editMode
-              ? 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100'
-              : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50',
-          ].join(' ')}
-          aria-label={editMode ? t.goals.editModeOn : t.goals.editModeOff}
-          aria-pressed={editMode}
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4" aria-hidden="true">
-            <path d="M4.5 19.5h3.75l9.75-9.75-3.75-3.75L4.5 15.75V19.5Z" />
-            <path d="m13.5 6 3.75 3.75" />
-          </svg>
-          <span
+        {!isMentorMode && (
+          <button
+            type="button"
+            onClick={() => {
+              setEditMode((prev) => !prev)
+              setShowFocusForm(false)
+              setEditFocus(null)
+              setShowActionForm(null)
+              setEditAction(null)
+            }}
             className={[
-              'h-2.5 w-2.5 rounded-full',
-              editMode ? 'bg-amber-500' : 'bg-gray-300',
+              'inline-flex items-center gap-2 text-xs border rounded-lg px-2.5 py-1.5 transition-colors',
+              editMode
+                ? 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100'
+                : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50',
             ].join(' ')}
-            aria-hidden="true"
-          />
-          <span className="sr-only">{editMode ? t.goals.editModeOn : t.goals.editModeOff}</span>
-        </button>
+            aria-label={editMode ? t.goals.editModeOn : t.goals.editModeOff}
+            aria-pressed={editMode}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4" aria-hidden="true">
+              <path d="M4.5 19.5h3.75l9.75-9.75-3.75-3.75L4.5 15.75V19.5Z" />
+              <path d="m13.5 6 3.75 3.75" />
+            </svg>
+            <span
+              className={[
+                'h-2.5 w-2.5 rounded-full',
+                editMode ? 'bg-amber-500' : 'bg-gray-300',
+              ].join(' ')}
+              aria-hidden="true"
+            />
+            <span className="sr-only">{editMode ? t.goals.editModeOn : t.goals.editModeOff}</span>
+          </button>
+        )}
       </div>
+      {isMentorMode && <p className="text-xs text-amber-600">{t.goals.readOnlyMentorMode}</p>}
 
       {focuses.length === 0 && !showFocusForm && (
         <p className="text-gray-400 text-sm text-center py-8">{t.goals.noFocuses}</p>
@@ -273,6 +287,7 @@ export default function GoalTypeDetails({ type, title }: { type: GoalType; title
                           initialValue={checkin?.value || ''}
                           onSave={(value) => saveCheckin(action.id, value)}
                           reflectionPlaceholder={t.dashboard.writeReflection}
+                          isReadOnly={isMentorMode}
                           compact
                         />
                       ) : null}
@@ -284,6 +299,7 @@ export default function GoalTypeDetails({ type, title }: { type: GoalType; title
                           initialValue={checkin?.value || ''}
                           onSave={(value) => saveCheckin(action.id, value)}
                           reflectionPlaceholder={t.dashboard.writeReflection}
+                          isReadOnly={isMentorMode}
                         />
                       </div>
                     )}
@@ -353,12 +369,14 @@ function ActionCheckinEditor({
   initialValue,
   onSave,
   reflectionPlaceholder,
+  isReadOnly,
   compact,
 }: {
   action: Action
   initialValue: string
   onSave: (value: string | boolean) => void
   reflectionPlaceholder: string
+  isReadOnly?: boolean
   compact?: boolean
 }) {
   const [value, setValue] = useState(initialValue)
@@ -394,6 +412,10 @@ function ActionCheckinEditor({
     const checked = value === 'true'
     const binaryLabelClass = ['inline-flex items-center text-sm text-gray-700', compact ? '' : 'gap-2'].filter(Boolean).join(' ')
 
+    if (isReadOnly) {
+      return <span className="text-xs text-gray-500">{checked ? '✓' : '—'}</span>
+    }
+
     return (
       <label className={binaryLabelClass}>
         <input
@@ -410,6 +432,10 @@ function ActionCheckinEditor({
   }
 
   if (action.type === 'quantitative') {
+    if (isReadOnly) {
+      return <span className="text-xs text-gray-500">{value || '—'}</span>
+    }
+
     return (
       <div className={compact ? 'inline-flex' : 'flex items-end gap-2'}>
         <input
@@ -428,13 +454,17 @@ function ActionCheckinEditor({
 
   return (
     <div>
-      <textarea
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        rows={2}
-        className="w-full border border-gray-200 rounded p-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-gray-300"
-        placeholder={reflectionPlaceholder}
-      />
+      {isReadOnly ? (
+        <p className="text-sm text-gray-600 whitespace-pre-wrap">{value || '—'}</p>
+      ) : (
+        <textarea
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          rows={2}
+          className="w-full border border-gray-200 rounded p-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-gray-300"
+          placeholder={reflectionPlaceholder}
+        />
+      )}
     </div>
   )
 }

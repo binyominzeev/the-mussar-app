@@ -4,6 +4,16 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { isSessionAdmin } from '@/lib/session'
 
+function normalizePairType(type: unknown): 'mutual_coach' | 'general_mentor' {
+  if (type === 'general_mentor') return 'general_mentor'
+  return 'mutual_coach'
+}
+
+function normalizeMutualPairForDisplay<T extends { user: { name: string | null }; partner: { name: string | null } }>(pair: T): T {
+  const shouldSwap = (pair.user.name ?? '').localeCompare(pair.partner.name ?? '') > 0
+  return shouldSwap ? ({ ...pair, user: pair.partner, partner: pair.user } as T) : pair
+}
+
 export async function GET() {
   const session = await getServerSession(authOptions)
   if (!isSessionAdmin(session)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -15,7 +25,27 @@ export async function GET() {
     },
   })
 
-  return NextResponse.json(pairs)
+  const mutualByKey = new Map<string, (typeof pairs)[number]>()
+  const generalPairs: (typeof pairs)[number][] = []
+
+  for (const pair of pairs) {
+    const normalizedType = normalizePairType(pair.type)
+    if (normalizedType === 'general_mentor') {
+      generalPairs.push({ ...pair, type: normalizedType })
+      continue
+    }
+
+    const key = [pair.userId, pair.partnerId].sort((a, b) => a.localeCompare(b)).join(':')
+    if (!mutualByKey.has(key)) {
+      const normalizedPair = normalizeMutualPairForDisplay({
+        ...pair,
+        type: normalizedType,
+      })
+      mutualByKey.set(key, normalizedPair)
+    }
+  }
+
+  return NextResponse.json([...generalPairs, ...Array.from(mutualByKey.values())])
 }
 
 export async function POST(req: NextRequest) {
@@ -23,8 +53,41 @@ export async function POST(req: NextRequest) {
   if (!isSessionAdmin(session)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const body = await req.json()
+  const pairType = normalizePairType(body.type)
+  if (!body.userId || !body.partnerId) {
+    return NextResponse.json({ error: 'Both user and partner are required' }, { status: 400 })
+  }
+  if (body.userId === body.partnerId) {
+    return NextResponse.json({ error: 'User and partner must be different' }, { status: 400 })
+  }
+
+  if (pairType === 'general_mentor') {
+    const pair = await prisma.accountabilityPair.create({
+      data: { userId: body.userId, partnerId: body.partnerId, type: pairType },
+      include: {
+        user: { select: { id: true, name: true } },
+        partner: { select: { id: true, name: true } },
+      },
+    })
+    return NextResponse.json(pair)
+  }
+
+  const existing = await prisma.accountabilityPair.findFirst({
+    where: {
+      OR: [
+        { userId: body.userId, partnerId: body.partnerId },
+        { userId: body.partnerId, partnerId: body.userId },
+      ],
+      type: { in: ['mutual_coach', 'coach', 'chavruta'] },
+    },
+  })
+
+  if (existing) {
+    return NextResponse.json({ error: 'Pair already exists' }, { status: 409 })
+  }
+
   const pair = await prisma.accountabilityPair.create({
-    data: { userId: body.userId, partnerId: body.partnerId, type: body.type },
+    data: { userId: body.userId, partnerId: body.partnerId, type: pairType },
     include: {
       user: { select: { id: true, name: true } },
       partner: { select: { id: true, name: true } },
