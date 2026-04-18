@@ -6,6 +6,9 @@ import { signOut, useSession } from 'next-auth/react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useMentorMode } from '@/contexts/MentorModeContext'
 import { useEffect, useState } from 'react'
+import { CHAT_UNREAD_REFRESH_EVENT } from '@/lib/chatEvents'
+
+const UNREAD_POLL_INTERVAL_MS = 10000
 
 export default function Nav() {
   const pathname = usePathname()
@@ -88,11 +91,17 @@ export default function Nav() {
     loadUnreadCount().catch(() => {})
     const intervalId = window.setInterval(() => {
       loadUnreadCount().catch(() => {})
-    }, 15000)
+    }, UNREAD_POLL_INTERVAL_MS)
+
+    const handleUnreadRefresh = () => {
+      loadUnreadCount().catch(() => {})
+    }
+    window.addEventListener(CHAT_UNREAD_REFRESH_EVENT, handleUnreadRefresh)
 
     return () => {
       mounted = false
       window.clearInterval(intervalId)
+      window.removeEventListener(CHAT_UNREAD_REFRESH_EVENT, handleUnreadRefresh)
     }
   }, [])
 
