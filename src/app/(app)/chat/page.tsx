@@ -27,8 +27,8 @@ type Message = {
   readAt: string | null
 }
 
-const THREAD_REFRESH_MS = 15000
-const MESSAGES_REFRESH_MS = 7000
+const THREAD_REFRESH_INTERVAL_MS = 15000
+const MESSAGES_REFRESH_INTERVAL_MS = 7000
 
 export default function ChatPage() {
   const { t } = useLanguage()
@@ -64,17 +64,16 @@ export default function ChatPage() {
       if (!res.ok) return
       const data = (await res.json()) as { messages: Message[] }
       setMessages(data.messages)
-      await loadThreads()
     } finally {
       setLoadingMessages(false)
     }
-  }, [loadThreads])
+  }, [])
 
   useEffect(() => {
     loadThreads().finally(() => setLoadingThreads(false))
     const intervalId = window.setInterval(() => {
       loadThreads().catch(() => {})
-    }, THREAD_REFRESH_MS)
+    }, THREAD_REFRESH_INTERVAL_MS)
     return () => window.clearInterval(intervalId)
   }, [loadThreads])
 
@@ -86,7 +85,7 @@ export default function ChatPage() {
     loadMessages(selectedUserId).catch(() => {})
     const intervalId = window.setInterval(() => {
       loadMessages(selectedUserId).catch(() => {})
-    }, MESSAGES_REFRESH_MS)
+    }, MESSAGES_REFRESH_INTERVAL_MS)
     return () => window.clearInterval(intervalId)
   }, [loadMessages, selectedUserId])
 
@@ -110,7 +109,7 @@ export default function ChatPage() {
       })
       if (!res.ok) return
       setMessageText('')
-      await loadMessages(selectedUserId)
+      await Promise.all([loadMessages(selectedUserId), loadThreads()])
     } finally {
       setSending(false)
     }

@@ -94,7 +94,7 @@ export default function Nav() {
       mounted = false
       window.clearInterval(intervalId)
     }
-  }, [pathname])
+  }, [])
 
   return (
     <>

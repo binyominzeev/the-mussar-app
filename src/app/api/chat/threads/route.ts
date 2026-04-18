@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { getSessionUserId } from '@/lib/session'
 import { getChatContactIds } from '@/lib/chat'
 
-const MAX_RECENT_MESSAGES = 500
+const MAX_RECENT_MESSAGES = 100
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -93,10 +93,10 @@ export async function GET() {
     })
     .filter((thread): thread is NonNullable<typeof thread> => Boolean(thread))
     .sort((a, b) => {
-      const aTime = a.lastMessage?.createdAt ? new Date(a.lastMessage.createdAt).getTime() : 0
-      const bTime = b.lastMessage?.createdAt ? new Date(b.lastMessage.createdAt).getTime() : 0
+      const aTime = a.lastMessage?.createdAt ? a.lastMessage.createdAt.getTime() : 0
+      const bTime = b.lastMessage?.createdAt ? b.lastMessage.createdAt.getTime() : 0
       if (aTime !== bTime) return bTime - aTime
-      return a.user.name.localeCompare(b.user.name)
+      return (a.user.name ?? '').localeCompare(b.user.name ?? '')
     })
 
   const totalUnread = Array.from(unreadCountByContactId.values()).reduce((sum, count) => sum + count, 0)
