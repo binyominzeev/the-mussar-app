@@ -37,6 +37,7 @@ export default function ChatPage() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
   const [messageText, setMessageText] = useState('')
+  const [isMessageComposing, setIsMessageComposing] = useState(false)
   const [loadingThreads, setLoadingThreads] = useState(true)
   const [loadingMessages, setLoadingMessages] = useState(false)
   const [sending, setSending] = useState(false)
@@ -121,7 +122,7 @@ export default function ChatPage() {
   }
 
   function handleMessageInputKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
-    const isImeComposing = event.nativeEvent.isComposing || event.keyCode === 229
+    const isImeComposing = isMessageComposing || event.nativeEvent.isComposing
     if (event.key !== 'Enter' || event.shiftKey || isImeComposing) return
     if (!window.matchMedia(`(min-width: ${CHAT_DESKTOP_MIN_WIDTH_PX}px)`).matches) return
     event.preventDefault()
@@ -219,6 +220,8 @@ export default function ChatPage() {
                 <textarea
                   value={messageText}
                   onChange={(e) => setMessageText(e.target.value)}
+                  onCompositionStart={() => setIsMessageComposing(true)}
+                  onCompositionEnd={() => setIsMessageComposing(false)}
                   onKeyDown={handleMessageInputKeyDown}
                   placeholder={t.chat.messagePlaceholder}
                   rows={2}
