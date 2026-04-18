@@ -7,6 +7,9 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import { useMentorMode } from '@/contexts/MentorModeContext'
 import { useEffect, useState } from 'react'
 
+const UNREAD_REFRESH_EVENT = 'chat-unread-refresh'
+const UNREAD_POLL_INTERVAL_MS = 5000
+
 export default function Nav() {
   const pathname = usePathname()
   const { data: session } = useSession()
@@ -88,11 +91,17 @@ export default function Nav() {
     loadUnreadCount().catch(() => {})
     const intervalId = window.setInterval(() => {
       loadUnreadCount().catch(() => {})
-    }, 15000)
+    }, UNREAD_POLL_INTERVAL_MS)
+
+    const handleUnreadRefresh = () => {
+      loadUnreadCount().catch(() => {})
+    }
+    window.addEventListener(UNREAD_REFRESH_EVENT, handleUnreadRefresh)
 
     return () => {
       mounted = false
       window.clearInterval(intervalId)
+      window.removeEventListener(UNREAD_REFRESH_EVENT, handleUnreadRefresh)
     }
   }, [])
 

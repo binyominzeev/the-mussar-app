@@ -1,6 +1,6 @@
 'use client'
 
-import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { FormEvent, KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
 
 type Thread = {
@@ -29,6 +29,7 @@ type Message = {
 
 const THREAD_REFRESH_INTERVAL_MS = 15000
 const MESSAGES_REFRESH_INTERVAL_MS = 7000
+const UNREAD_REFRESH_EVENT = 'chat-unread-refresh'
 
 export default function ChatPage() {
   const { t } = useLanguage()
@@ -64,6 +65,7 @@ export default function ChatPage() {
       if (!res.ok) return
       const data = (await res.json()) as { messages: Message[] }
       setMessages(data.messages)
+      window.dispatchEvent(new Event(UNREAD_REFRESH_EVENT))
     } finally {
       setLoadingMessages(false)
     }
@@ -82,19 +84,22 @@ export default function ChatPage() {
       setMessages([])
       return
     }
-    loadMessages(selectedUserId).catch(() => {})
+    loadMessages(selectedUserId)
+      .then(() => loadThreads())
+      .catch(() => {})
     const intervalId = window.setInterval(() => {
-      loadMessages(selectedUserId).catch(() => {})
+      loadMessages(selectedUserId)
+        .then(() => loadThreads())
+        .catch(() => {})
     }, MESSAGES_REFRESH_INTERVAL_MS)
     return () => window.clearInterval(intervalId)
-  }, [loadMessages, selectedUserId])
+  }, [loadMessages, loadThreads, selectedUserId])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  async function sendMessage(e: FormEvent) {
-    e.preventDefault()
+  async function sendMessage() {
     if (!selectedUserId || !messageText.trim() || sending) return
 
     setSending(true)
@@ -113,6 +118,13 @@ export default function ChatPage() {
     } finally {
       setSending(false)
     }
+  }
+
+  function handleMessageInputKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key !== 'Enter' || event.shiftKey || event.nativeEvent.isComposing) return
+    if (!window.matchMedia('(min-width: 768px)').matches) return
+    event.preventDefault()
+    void sendMessage()
   }
 
   return (
@@ -196,10 +208,17 @@ export default function ChatPage() {
                 <div ref={messagesEndRef} />
               </div>
 
-              <form onSubmit={sendMessage} className="border-t border-gray-200 p-3 flex items-end gap-2">
+              <form
+                onSubmit={(e: FormEvent) => {
+                  e.preventDefault()
+                  void sendMessage()
+                }}
+                className="border-t border-gray-200 p-3 flex items-end gap-2"
+              >
                 <textarea
                   value={messageText}
                   onChange={(e) => setMessageText(e.target.value)}
+                  onKeyDown={handleMessageInputKeyDown}
                   placeholder={t.chat.messagePlaceholder}
                   rows={2}
                   maxLength={2000}
