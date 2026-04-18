@@ -89,9 +89,7 @@ export default function ChatPage() {
       .then(() => loadThreads())
       .catch(() => {})
     const intervalId = window.setInterval(() => {
-      loadMessages(selectedUserId)
-        .then(() => loadThreads())
-        .catch(() => {})
+      loadMessages(selectedUserId).catch(() => {})
     }, MESSAGES_REFRESH_INTERVAL_MS)
     return () => window.clearInterval(intervalId)
   }, [loadMessages, loadThreads, selectedUserId])
