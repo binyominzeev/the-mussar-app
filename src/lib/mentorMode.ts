@@ -21,11 +21,14 @@ function getTargetUserIdFromRequest(req: NextRequest): string | null {
 function normalizePairType(type: string): PairType {
   const normalized = type.trim().toLowerCase()
   if (normalized === 'general_mentor') return 'general_mentor'
-  if (normalized === 'mutual_coach' || normalized === 'coach' || normalized === 'chavruta') return normalized
+  if (normalized === 'mutual_coach') return 'mutual_coach'
+  if (normalized === 'coach') return 'coach'
+  if (normalized === 'chavruta') return 'chavruta'
   return null
 }
 
 function isMutualType(type: PairType) {
+  if (!type) return false
   return type === 'mutual_coach' || type === 'coach' || type === 'chavruta'
 }
 
@@ -62,8 +65,15 @@ export async function canMentorUser(mentorId: string, targetUserId: string): Pro
     return false
   })
 
-  if (pairs.length > 0 && !allowed) {
-    console.warn('[mentor-mode] Rejected mentor check due to unsupported pair type', {
+  const unsupportedPairTypes = pairs.filter((pair) => !normalizePairType(pair.type)).map((pair) => pair.type)
+  if (pairs.length > 0 && unsupportedPairTypes.length === pairs.length) {
+    console.warn('[mentor-mode] Rejected mentor check because all pair types are unsupported', {
+      mentorId,
+      targetUserId,
+      pairTypes: pairs.map((pair) => pair.type),
+    })
+  } else if (pairs.length > 0 && !allowed) {
+    console.warn('[mentor-mode] Rejected mentor check because no valid relationship was found', {
       mentorId,
       targetUserId,
       pairTypes: pairs.map((pair) => pair.type),
@@ -105,7 +115,7 @@ export async function getMentorAssignments(mentorId: string): Promise<Assignment
     }
 
     const isMutual = isMutualType(pairType)
-    if (!isMutual && pair.userId !== mentorId) {
+    if (pairType === 'general_mentor' && pair.userId !== mentorId) {
       skippedPairs.push({ pairId: pair.id, reason: 'not_mentor_in_one_way_pair', type: pair.type })
       continue
     }
