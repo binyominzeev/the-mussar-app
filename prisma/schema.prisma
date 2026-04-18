@@ -19,6 +19,8 @@ model User {
   checkins                     Checkin[]
   accountabilityPairsAsUser    AccountabilityPair[] @relation("UserPairs")
   accountabilityPairsAsPartner AccountabilityPair[] @relation("PartnerPairs")
+  sentMessages                 DirectMessage[]      @relation("SentDirectMessages")
+  receivedMessages             DirectMessage[]      @relation("ReceivedDirectMessages")
 }
 
 model Goal {
@@ -80,4 +82,19 @@ model AccountabilityPair {
 
   user    User @relation("UserPairs", fields: [userId], references: [id])
   partner User @relation("PartnerPairs", fields: [partnerId], references: [id])
+}
+
+model DirectMessage {
+  id          String   @id @default(cuid())
+  senderId    String
+  recipientId String
+  body        String
+  createdAt   DateTime @default(now())
+  readAt      DateTime?
+
+  sender    User @relation("SentDirectMessages", fields: [senderId], references: [id])
+  recipient User @relation("ReceivedDirectMessages", fields: [recipientId], references: [id])
+
+  @@index([senderId, recipientId, createdAt])
+  @@index([recipientId, senderId, readAt])
 }
