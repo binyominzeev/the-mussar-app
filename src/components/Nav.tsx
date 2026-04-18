@@ -15,7 +15,7 @@ export default function Nav() {
   const { data: session } = useSession()
   const isAdmin = session?.user?.isAdmin
   const { language, setLanguage, t } = useLanguage()
-  const { assignees, hasMentorAccess, isMentorMode, targetUser, setTargetUserId, loading } = useMentorMode()
+  const { assignees, hasMentorAccess, isMentorMode, isReadOnly, targetUser, setTargetUserId, loading } = useMentorMode()
   const [unreadCount, setUnreadCount] = useState(0)
 
   const links = [
@@ -146,7 +146,7 @@ export default function Nav() {
                 </select>
               </div>
             )}
-            {isMentorMode && <span className="text-[11px] text-amber-600">{t.nav.mentorReadOnly}</span>}
+            {isMentorMode && isReadOnly && <span className="text-[11px] text-amber-600">{t.nav.mentorReadOnly}</span>}
             <div className="flex items-center gap-1 text-xs">
               <button
                 onClick={() => setLanguage('en')}
@@ -210,7 +210,7 @@ export default function Nav() {
               </select>
             </div>
           )}
-          {isMentorMode && <p className="text-[11px] text-amber-600">{t.nav.mentorReadOnly}</p>}
+          {isMentorMode && isReadOnly && <p className="text-[11px] text-amber-600">{t.nav.mentorReadOnly}</p>}
           <div className="h-8 flex items-center justify-between">
           <div className="flex items-center gap-1 text-xs">
             <button

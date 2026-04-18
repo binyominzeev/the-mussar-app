@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { isMentorModeReadOnly, resolveReadUserId } from '@/lib/mentorMode'
+import { resolveReadUserId, resolveWriteUserId } from '@/lib/mentorMode'
 import { prisma } from '@/lib/prisma'
 import { getSessionUserId } from '@/lib/session'
 
@@ -29,7 +29,8 @@ export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   const userId = getSessionUserId(session)
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  if (await isMentorModeReadOnly(req, userId)) {
+  const writeUserId = await resolveWriteUserId(req, userId)
+  if (!writeUserId) {
     return NextResponse.json({ error: 'Mentor mode is read-only' }, { status: 403 })
   }
 
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest) {
 
   const goal = await prisma.goal.create({
     data: {
-      userId,
+      userId: writeUserId,
       type: body.type,
       title: body.title,
       description: body.description,

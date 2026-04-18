@@ -41,7 +41,7 @@ interface Checkin {
 
 export default function GoalTypeDetails({ type, title }: { type: GoalType; title: string }) {
   const { t } = useLanguage()
-  const { isMentorMode } = useMentorMode()
+  const { isMentorMode, isReadOnly } = useMentorMode()
   const [goals, setGoals] = useState<Goal[]>([])
   const [checkins, setCheckins] = useState<Checkin[]>([])
   const [editMode, setEditMode] = useState(false)
@@ -178,7 +178,7 @@ export default function GoalTypeDetails({ type, title }: { type: GoalType; title
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">{title}</h1>
-        {!isMentorMode && (
+        {!isReadOnly && (
           <button
             type="button"
             onClick={() => {
@@ -212,7 +212,7 @@ export default function GoalTypeDetails({ type, title }: { type: GoalType; title
           </button>
         )}
       </div>
-      {isMentorMode && <p className="text-xs text-amber-600">{t.goals.readOnlyMentorMode}</p>}
+      {isMentorMode && isReadOnly && <p className="text-xs text-amber-600">{t.goals.readOnlyMentorMode}</p>}
 
       {focuses.length === 0 && !showFocusForm && (
         <p className="text-gray-400 text-sm text-center py-8">{t.goals.noFocuses}</p>
@@ -287,7 +287,7 @@ export default function GoalTypeDetails({ type, title }: { type: GoalType; title
                           initialValue={checkin?.value || ''}
                           onSave={(value) => saveCheckin(action.id, value)}
                           reflectionPlaceholder={t.dashboard.writeReflection}
-                          isReadOnly={isMentorMode}
+                           isReadOnly={isReadOnly}
                           compact
                         />
                       ) : null}
@@ -299,7 +299,7 @@ export default function GoalTypeDetails({ type, title }: { type: GoalType; title
                           initialValue={checkin?.value || ''}
                           onSave={(value) => saveCheckin(action.id, value)}
                           reflectionPlaceholder={t.dashboard.writeReflection}
-                          isReadOnly={isMentorMode}
+                           isReadOnly={isReadOnly}
                         />
                       </div>
                     )}

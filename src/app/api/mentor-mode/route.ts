@@ -2,9 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import {
+  canMentorWrite,
   canMentorUser,
-  getMentorAssignments,
   getMentorModeTargetUserId,
+  isMentorModeReadOnly,
+  getMentorAssignments,
   MENTOR_MODE_COOKIE,
 } from '@/lib/mentorMode'
 import { getSessionUserId } from '@/lib/session'
@@ -12,6 +14,7 @@ import { getSessionUserId } from '@/lib/session'
 async function buildState(req: NextRequest, userId: string) {
   const assignees = await getMentorAssignments(userId)
   const targetUserId = await getMentorModeTargetUserId(req, userId)
+  const isReadOnly = await isMentorModeReadOnly(req, userId)
   const targetUser = targetUserId ? assignees.find((item) => item.id === targetUserId) ?? null : null
   console.info('[mentor-mode-api] Built mentor mode state', {
     userId,
@@ -25,6 +28,7 @@ async function buildState(req: NextRequest, userId: string) {
     assignees,
     targetUser,
     isMentorMode: Boolean(targetUser),
+    isReadOnly,
   }
 }
 
@@ -65,11 +69,13 @@ export async function POST(req: NextRequest) {
 
   const assignees = await getMentorAssignments(userId)
   const targetUser = targetUserId && targetUserId !== userId ? assignees.find((item) => item.id === targetUserId) ?? null : null
+  const isReadOnly = targetUser ? !(await canMentorWrite(userId, targetUser.id)) : false
 
   const response = NextResponse.json({
     assignees,
     targetUser,
     isMentorMode: Boolean(targetUser),
+    isReadOnly,
   })
 
   if (targetUserId && targetUserId !== userId) {
