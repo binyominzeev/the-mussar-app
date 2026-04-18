@@ -12,6 +12,7 @@ type MentorModeState = {
   assignees: MentorAssignee[]
   targetUser: MentorAssignee | null
   isMentorMode: boolean
+  isReadOnly: boolean
 }
 
 interface MentorModeContextValue extends MentorModeState {
@@ -25,6 +26,7 @@ const emptyState: MentorModeState = {
   assignees: [],
   targetUser: null,
   isMentorMode: false,
+  isReadOnly: false,
 }
 
 const MentorModeContext = createContext<MentorModeContextValue>({
@@ -53,6 +55,7 @@ export function MentorModeProvider({ children }: { children: React.ReactNode }) 
         assigneeCount: nextState.assignees.length,
         targetUserId: nextState.targetUser?.id ?? null,
         isMentorMode: nextState.isMentorMode,
+        isReadOnly: nextState.isReadOnly,
       })
       setState(nextState)
     } finally {
@@ -81,6 +84,7 @@ export function MentorModeProvider({ children }: { children: React.ReactNode }) 
         requestedTargetUserId: targetUserId,
         resolvedTargetUserId: nextState.targetUser?.id ?? null,
         assigneeCount: nextState.assignees.length,
+        isReadOnly: nextState.isReadOnly,
       })
       setState(nextState)
       return true

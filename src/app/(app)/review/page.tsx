@@ -23,7 +23,7 @@ interface Checkin {
 
 export default function ReviewPage() {
   const { t } = useLanguage()
-  const { isMentorMode } = useMentorMode()
+  const { isMentorMode, isReadOnly } = useMentorMode()
   const [checkins, setCheckins] = useState<Checkin[]>([])
   const [weeks, setWeeks] = useState(1)
   const [reflection, setReflection] = useState('')
@@ -63,7 +63,7 @@ export default function ReviewPage() {
           <option value={4}>{t.review.last30}</option>
         </select>
       </div>
-      {isMentorMode && <p className="text-xs text-amber-600">{t.review.readOnlyMentorMode}</p>}
+      {isMentorMode && isReadOnly && <p className="text-xs text-amber-600">{t.review.readOnlyMentorMode}</p>}
 
       {checkins.length === 0 ? (
         <p className="text-gray-400 text-sm text-center py-8">{t.review.noCheckins}</p>
@@ -121,12 +121,12 @@ export default function ReviewPage() {
         <textarea
           value={reflection}
           onChange={(e) => setReflection(e.target.value)}
-          disabled={isMentorMode}
+          disabled={isReadOnly}
           rows={4}
           className="w-full border border-gray-200 rounded-lg p-3 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-gray-300 disabled:bg-gray-50 disabled:text-gray-400"
           placeholder={t.review.reflectionPlaceholder}
         />
-        {!isMentorMode && (
+        {!isReadOnly && (
           <button className="mt-2 text-xs bg-gray-100 hover:bg-gray-200 rounded px-3 py-1.5">
             {t.review.saveReflection}
           </button>

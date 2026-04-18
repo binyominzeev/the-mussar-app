@@ -10,6 +10,7 @@ type Assignment = {
 }
 
 type PairType = 'general_mentor' | 'mutual_coach' | 'coach' | 'chavruta' | null
+type MentorAccessLevel = 'none' | 'read_only' | 'read_write'
 
 function getTargetUserIdFromRequest(req: NextRequest): string | null {
   const value = req.cookies.get(MENTOR_MODE_COOKIE)?.value?.trim()
@@ -32,8 +33,8 @@ function isMutualType(type: PairType) {
   return type === 'mutual_coach' || type === 'coach' || type === 'chavruta'
 }
 
-export async function canMentorUser(mentorId: string, targetUserId: string): Promise<boolean> {
-  if (!mentorId || !targetUserId || mentorId === targetUserId) return false
+export async function getMentorAccessLevel(mentorId: string, targetUserId: string): Promise<MentorAccessLevel> {
+  if (!mentorId || !targetUserId || mentorId === targetUserId) return 'none'
 
   const pairs = await prisma.accountabilityPair.findMany({
     where: {
@@ -51,16 +52,18 @@ export async function canMentorUser(mentorId: string, targetUserId: string): Pro
     select: { userId: true, partnerId: true, type: true },
   })
 
-  const allowed = pairs.some((pair) => {
+  let hasReadOnlyAccess = false
+  const hasWriteAccess = pairs.some((pair) => {
     const pairType = normalizePairType(pair.type)
     if (pairType === 'general_mentor') {
       return pair.userId === mentorId && pair.partnerId === targetUserId
     }
     if (isMutualType(pairType)) {
-      return (
+      hasReadOnlyAccess =
+        hasReadOnlyAccess ||
         (pair.userId === mentorId && pair.partnerId === targetUserId) ||
         (pair.userId === targetUserId && pair.partnerId === mentorId)
-      )
+      return false
     }
     return false
   })
@@ -72,7 +75,7 @@ export async function canMentorUser(mentorId: string, targetUserId: string): Pro
       targetUserId,
       pairTypes: pairs.map((pair) => pair.type),
     })
-  } else if (pairs.length > 0 && !allowed) {
+  } else if (pairs.length > 0 && !hasWriteAccess && !hasReadOnlyAccess) {
     console.warn('[mentor-mode] Rejected mentor check because no valid relationship was found', {
       mentorId,
       targetUserId,
@@ -80,7 +83,17 @@ export async function canMentorUser(mentorId: string, targetUserId: string): Pro
     })
   }
 
-  return allowed
+  if (hasWriteAccess) return 'read_write'
+  if (hasReadOnlyAccess) return 'read_only'
+  return 'none'
+}
+
+export async function canMentorUser(mentorId: string, targetUserId: string): Promise<boolean> {
+  return (await getMentorAccessLevel(mentorId, targetUserId)) !== 'none'
+}
+
+export async function canMentorWrite(mentorId: string, targetUserId: string): Promise<boolean> {
+  return (await getMentorAccessLevel(mentorId, targetUserId)) === 'read_write'
 }
 
 export async function getMentorAssignments(mentorId: string): Promise<Assignment[]> {
@@ -156,8 +169,8 @@ export async function getMentorAssignments(mentorId: string): Promise<Assignment
 export async function getMentorModeTargetUserId(req: NextRequest, userId: string): Promise<string | null> {
   const targetUserId = getTargetUserIdFromRequest(req)
   if (!targetUserId || targetUserId === userId) return null
-  const allowed = await canMentorUser(userId, targetUserId)
-  return allowed ? targetUserId : null
+  const accessLevel = await getMentorAccessLevel(userId, targetUserId)
+  return accessLevel === 'none' ? null : targetUserId
 }
 
 export async function resolveReadUserId(req: NextRequest, userId: string): Promise<string> {
@@ -167,5 +180,12 @@ export async function resolveReadUserId(req: NextRequest, userId: string): Promi
 
 export async function isMentorModeReadOnly(req: NextRequest, userId: string): Promise<boolean> {
   const targetUserId = await getMentorModeTargetUserId(req, userId)
-  return Boolean(targetUserId)
+  if (!targetUserId) return false
+  return !(await canMentorWrite(userId, targetUserId))
+}
+
+export async function resolveWriteUserId(req: NextRequest, userId: string): Promise<string | null> {
+  const targetUserId = await getMentorModeTargetUserId(req, userId)
+  if (!targetUserId) return userId
+  return (await canMentorWrite(userId, targetUserId)) ? targetUserId : null
 }
