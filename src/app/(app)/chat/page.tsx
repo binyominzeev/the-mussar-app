@@ -1,6 +1,6 @@
 'use client'
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from 'react'
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
 
 type Thread = {
@@ -46,7 +46,7 @@ export default function ChatPage() {
     [selectedUserId, threads]
   )
 
-  async function loadThreads() {
+  const loadThreads = useCallback(async () => {
     const res = await fetch('/api/chat/threads', { cache: 'no-store' })
     if (!res.ok) return
     const data = (await res.json()) as { threads: Thread[] }
@@ -55,9 +55,9 @@ export default function ChatPage() {
       if (current && data.threads.some((thread) => thread.user.id === current)) return current
       return data.threads[0]?.user.id ?? null
     })
-  }
+  }, [])
 
-  async function loadMessages(userId: string) {
+  const loadMessages = useCallback(async (userId: string) => {
     setLoadingMessages(true)
     try {
       const res = await fetch(`/api/chat/messages?userId=${encodeURIComponent(userId)}`, { cache: 'no-store' })
@@ -68,7 +68,7 @@ export default function ChatPage() {
     } finally {
       setLoadingMessages(false)
     }
-  }
+  }, [loadThreads])
 
   useEffect(() => {
     loadThreads().finally(() => setLoadingThreads(false))
@@ -76,7 +76,7 @@ export default function ChatPage() {
       loadThreads().catch(() => {})
     }, THREAD_REFRESH_MS)
     return () => window.clearInterval(intervalId)
-  }, [])
+  }, [loadThreads])
 
   useEffect(() => {
     if (!selectedUserId) {
@@ -88,7 +88,7 @@ export default function ChatPage() {
       loadMessages(selectedUserId).catch(() => {})
     }, MESSAGES_REFRESH_MS)
     return () => window.clearInterval(intervalId)
-  }, [selectedUserId])
+  }, [loadMessages, selectedUserId])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
