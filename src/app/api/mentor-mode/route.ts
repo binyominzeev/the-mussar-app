@@ -13,6 +13,13 @@ async function buildState(req: NextRequest, userId: string) {
   const assignees = await getMentorAssignments(userId)
   const targetUserId = await getMentorModeTargetUserId(req, userId)
   const targetUser = targetUserId ? assignees.find((item) => item.id === targetUserId) ?? null : null
+  console.info('[mentor-mode-api] Built mentor mode state', {
+    userId,
+    assigneeCount: assignees.length,
+    assigneeIds: assignees.map((assignee) => assignee.id),
+    cookieTargetUserId: req.cookies.get(MENTOR_MODE_COOKIE)?.value ?? null,
+    resolvedTargetUserId: targetUser?.id ?? null,
+  })
 
   return {
     assignees,
@@ -24,7 +31,10 @@ async function buildState(req: NextRequest, userId: string) {
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)
   const userId = getSessionUserId(session)
-  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!userId) {
+    console.warn('[mentor-mode-api] Unauthorized GET request')
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
 
   const state = await buildState(req, userId)
   const response = NextResponse.json(state)
@@ -37,14 +47,20 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   const userId = getSessionUserId(session)
-  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!userId) {
+    console.warn('[mentor-mode-api] Unauthorized POST request')
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
 
   const body = await req.json()
   const targetUserId = typeof body.targetUserId === 'string' ? body.targetUserId : null
 
   if (targetUserId && targetUserId !== userId) {
     const allowed = await canMentorUser(userId, targetUserId)
-    if (!allowed) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    if (!allowed) {
+      console.warn('[mentor-mode-api] Rejected mentor mode switch', { userId, targetUserId })
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
   }
 
   const assignees = await getMentorAssignments(userId)

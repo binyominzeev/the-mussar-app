@@ -44,10 +44,16 @@ export function MentorModeProvider({ children }: { children: React.ReactNode }) 
     try {
       const res = await fetch('/api/mentor-mode', { cache: 'no-store' })
       if (!res.ok) {
+        console.warn('[mentor-mode] Failed to refresh mentor mode state', { status: res.status })
         setState(emptyState)
         return
       }
       const nextState = (await res.json()) as MentorModeState
+      console.info('[mentor-mode] Refreshed mentor mode state', {
+        assigneeCount: nextState.assignees.length,
+        targetUserId: nextState.targetUser?.id ?? null,
+        isMentorMode: nextState.isMentorMode,
+      })
       setState(nextState)
     } finally {
       setLoading(false)
@@ -66,8 +72,16 @@ export function MentorModeProvider({ children }: { children: React.ReactNode }) 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ targetUserId }),
       })
-      if (!res.ok) return false
+      if (!res.ok) {
+        console.warn('[mentor-mode] Failed to set mentor mode target', { targetUserId, status: res.status })
+        return false
+      }
       const nextState = (await res.json()) as MentorModeState
+      console.info('[mentor-mode] Updated mentor mode target', {
+        requestedTargetUserId: targetUserId,
+        resolvedTargetUserId: nextState.targetUser?.id ?? null,
+        assigneeCount: nextState.assignees.length,
+      })
       setState(nextState)
       return true
     } finally {
