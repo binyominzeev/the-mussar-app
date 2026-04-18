@@ -7,10 +7,20 @@ export interface Translations {
     habits: string
     review: string
     admin: string
+    chat: string
     mentorMode: string
     myWorkspace: string
     mentorReadOnly: string
     signOut: string
+  }
+  chat: {
+    title: string
+    loading: string
+    noConversations: string
+    selectConversation: string
+    emptyConversation: string
+    messagePlaceholder: string
+    send: string
   }
   login: {
     title: string
@@ -131,10 +141,20 @@ export const translations: Record<Language, Translations> = {
       habits: 'Habits',
       review: 'Overview',
       admin: 'Admin',
+      chat: 'Chat',
       mentorMode: 'Mentor mode',
       myWorkspace: 'My workspace',
       mentorReadOnly: 'Read-only mentor view',
       signOut: 'Sign out',
+    },
+    chat: {
+      title: 'Messages',
+      loading: 'Loading conversations...',
+      noConversations: 'No conversations yet.',
+      selectConversation: 'Select a conversation to start chatting.',
+      emptyConversation: 'No messages yet.',
+      messagePlaceholder: 'Type a message...',
+      send: 'Send',
     },
     // Login
     login: {
@@ -261,10 +281,20 @@ export const translations: Record<Language, Translations> = {
       habits: 'Szokások',
       review: 'Áttekintés',
       admin: 'Admin',
+      chat: 'Chat',
       mentorMode: 'Mentor mód',
       myWorkspace: 'Saját felület',
       mentorReadOnly: 'Csak olvasható mentor nézet',
       signOut: 'Kijelentkezés',
+    },
+    chat: {
+      title: 'Üzenetek',
+      loading: 'Beszélgetések betöltése...',
+      noConversations: 'Még nincs beszélgetés.',
+      selectConversation: 'Válassz beszélgetést a chateléshez.',
+      emptyConversation: 'Még nincs üzenet.',
+      messagePlaceholder: 'Írj üzenetet...',
+      send: 'Küldés',
     },
     // Login
     login: {

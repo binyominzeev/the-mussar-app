@@ -8,6 +8,7 @@ A structured personal growth and accountability web app built with Next.js, Pris
 - **Goals** — manage Knowledge and Habits goals with 30-day focuses and daily actions
 - **Weekly Review** — completion stats and reflection
 - **Admin Panel** — user management and accountability pairs
+- **Direct Chat** — instant messaging between accountability partners and mentor relationships
 - **Authentication** — email + password login
 
 ## Getting Started

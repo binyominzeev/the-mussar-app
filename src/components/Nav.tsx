@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useMentorMode } from '@/contexts/MentorModeContext'
+import { useEffect, useState } from 'react'
 
 export default function Nav() {
   const pathname = usePathname()
@@ -12,6 +13,7 @@ export default function Nav() {
   const isAdmin = session?.user?.isAdmin
   const { language, setLanguage, t } = useLanguage()
   const { assignees, hasMentorAccess, isMentorMode, targetUser, setTargetUserId, loading } = useMentorMode()
+  const [unreadCount, setUnreadCount] = useState(0)
 
   const links = [
     { href: '/goals', label: t.nav.goals },
@@ -61,10 +63,38 @@ export default function Nav() {
             <path d="m9.75 12 1.5 1.5 3-3" />
           </svg>
         )
+      case '/chat':
+        return (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
+            <path d="M4.5 5.25h15a1.5 1.5 0 0 1 1.5 1.5V15a1.5 1.5 0 0 1-1.5 1.5H9l-4.5 3v-3H4.5A1.5 1.5 0 0 1 3 15V6.75a1.5 1.5 0 0 1 1.5-1.5Z" />
+            <path d="M7.5 9.75h9M7.5 12.75h6" />
+          </svg>
+        )
       default:
         return null
     }
   }
+
+  useEffect(() => {
+    let mounted = true
+
+    const loadUnreadCount = async () => {
+      const res = await fetch('/api/chat/unread', { cache: 'no-store' })
+      if (!res.ok || !mounted) return
+      const data = (await res.json()) as { unreadCount: number }
+      setUnreadCount(data.unreadCount ?? 0)
+    }
+
+    loadUnreadCount().catch(() => {})
+    const intervalId = window.setInterval(() => {
+      loadUnreadCount().catch(() => {})
+    }, 15000)
+
+    return () => {
+      mounted = false
+      window.clearInterval(intervalId)
+    }
+  }, [])
 
   return (
     <>
@@ -123,6 +153,21 @@ export default function Nav() {
                 HU
               </button>
             </div>
+            <Link
+              href="/chat"
+              className={`relative inline-flex items-center justify-center h-8 w-8 rounded-full ${
+                pathname === '/chat' ? 'text-gray-900 bg-gray-100' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+              }`}
+              title={t.nav.chat}
+              aria-label={t.nav.chat}
+            >
+              {getIcon('/chat')}
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 inline-flex min-w-5 h-5 items-center justify-center rounded-full bg-red-500 text-white text-[11px] px-1.5">
+                  {unreadCount}
+                </span>
+              )}
+            </Link>
             <button
               onClick={() => signOut({ callbackUrl: '/login' })}
               className="text-xs text-gray-400 hover:text-gray-600"
@@ -201,6 +246,23 @@ export default function Nav() {
               </Link>
             )
           })}
+          <Link
+            href="/chat"
+            title={t.nav.chat}
+            className={`flex-1 min-w-0 py-2.5 flex flex-col items-center justify-center gap-0.5 text-xs font-medium ${
+              pathname === '/chat' ? 'text-gray-900' : 'text-gray-500'
+            }`}
+          >
+            <span className="relative">
+              {getIcon('/chat')}
+              {unreadCount > 0 && (
+                <span className="absolute -top-1.5 -right-2 inline-flex min-w-4 h-4 items-center justify-center rounded-full bg-red-500 text-white text-[10px] px-1">
+                  {unreadCount}
+                </span>
+              )}
+            </span>
+            <span className="truncate">{t.nav.chat}</span>
+          </Link>
         </div>
       </nav>
     </>
