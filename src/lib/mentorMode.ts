@@ -9,6 +9,8 @@ type Assignment = {
   email: string
 }
 
+type PairType = 'general_mentor' | 'mutual_coach' | 'coach' | 'chavruta' | null
+
 function getTargetUserIdFromRequest(req: NextRequest): string | null {
   const value = req.cookies.get(MENTOR_MODE_COOKIE)?.value?.trim()
   if (!value) return null
@@ -16,46 +18,65 @@ function getTargetUserIdFromRequest(req: NextRequest): string | null {
   return value
 }
 
-function isMutualType(type: string) {
+function normalizePairType(type: string): PairType {
+  const normalized = type.trim().toLowerCase()
+  if (normalized === 'general_mentor') return 'general_mentor'
+  if (normalized === 'mutual_coach' || normalized === 'coach' || normalized === 'chavruta') return normalized
+  return null
+}
+
+function isMutualType(type: PairType) {
   return type === 'mutual_coach' || type === 'coach' || type === 'chavruta'
 }
 
 export async function canMentorUser(mentorId: string, targetUserId: string): Promise<boolean> {
   if (!mentorId || !targetUserId || mentorId === targetUserId) return false
 
-  const relationship = await prisma.accountabilityPair.findFirst({
+  const pairs = await prisma.accountabilityPair.findMany({
     where: {
       OR: [
         {
           userId: mentorId,
           partnerId: targetUserId,
-          type: 'general_mentor',
         },
         {
-          OR: [
-            { userId: mentorId, partnerId: targetUserId },
-            { userId: targetUserId, partnerId: mentorId },
-          ],
-          type: { in: ['mutual_coach', 'coach', 'chavruta'] },
+          userId: targetUserId,
+          partnerId: mentorId,
         },
       ],
     },
-    select: { id: true },
+    select: { userId: true, partnerId: true, type: true },
   })
 
-  return Boolean(relationship)
+  const allowed = pairs.some((pair) => {
+    const pairType = normalizePairType(pair.type)
+    if (pairType === 'general_mentor') {
+      return pair.userId === mentorId && pair.partnerId === targetUserId
+    }
+    if (isMutualType(pairType)) {
+      return (
+        (pair.userId === mentorId && pair.partnerId === targetUserId) ||
+        (pair.userId === targetUserId && pair.partnerId === mentorId)
+      )
+    }
+    return false
+  })
+
+  if (pairs.length > 0 && !allowed) {
+    console.warn('[mentor-mode] Rejected mentor check due to unsupported pair type', {
+      mentorId,
+      targetUserId,
+      pairTypes: pairs.map((pair) => pair.type),
+    })
+  }
+
+  return allowed
 }
 
 export async function getMentorAssignments(mentorId: string): Promise<Assignment[]> {
   const pairs = await prisma.accountabilityPair.findMany({
     where: {
-      OR: [
-        { userId: mentorId, type: 'general_mentor' },
-        {
-          OR: [{ userId: mentorId }, { partnerId: mentorId }],
-          type: { in: ['mutual_coach', 'coach', 'chavruta'] },
-        },
-      ],
+      OR: [{ userId: mentorId }, { partnerId: mentorId }],
     },
     include: {
       user: { select: { id: true, name: true, email: true } },
@@ -63,16 +84,47 @@ export async function getMentorAssignments(mentorId: string): Promise<Assignment
     },
   })
 
+  console.info('[mentor-mode] Resolving assignments', {
+    mentorId,
+    pairCount: pairs.length,
+    pairSummaries: pairs.map((pair) => ({
+      id: pair.id,
+      userId: pair.userId,
+      partnerId: pair.partnerId,
+      type: pair.type,
+    })),
+  })
+
   const assignmentMap = new Map<string, Assignment>()
+  const skippedPairs: Array<{ pairId: string; reason: string; type: string }> = []
   for (const pair of pairs) {
-    const isMutual = isMutualType(pair.type)
+    const pairType = normalizePairType(pair.type)
+    if (!pairType) {
+      skippedPairs.push({ pairId: pair.id, reason: 'unsupported_pair_type', type: pair.type })
+      continue
+    }
+
+    const isMutual = isMutualType(pairType)
+    if (!isMutual && pair.userId !== mentorId) {
+      skippedPairs.push({ pairId: pair.id, reason: 'not_mentor_in_one_way_pair', type: pair.type })
+      continue
+    }
+
     const target = isMutual
       ? pair.userId === mentorId
         ? pair.partner
         : pair.user
       : pair.partner
 
-    if (!target || target.id === mentorId) continue
+    if (!target) {
+      skippedPairs.push({ pairId: pair.id, reason: 'missing_target_user', type: pair.type })
+      continue
+    }
+    if (target.id === mentorId) {
+      skippedPairs.push({ pairId: pair.id, reason: 'self_target', type: pair.type })
+      continue
+    }
+
     assignmentMap.set(target.id, {
       id: target.id,
       name: target.name ?? '',
@@ -80,7 +132,15 @@ export async function getMentorAssignments(mentorId: string): Promise<Assignment
     })
   }
 
-  return Array.from(assignmentMap.values()).sort((a, b) => a.name.localeCompare(b.name))
+  const assignments = Array.from(assignmentMap.values()).sort((a, b) => a.name.localeCompare(b.name))
+  console.info('[mentor-mode] Resolved assignments result', {
+    mentorId,
+    assignmentCount: assignments.length,
+    assignments: assignments.map((assignment) => assignment.id),
+    skippedPairs,
+  })
+
+  return assignments
 }
 
 export async function getMentorModeTargetUserId(req: NextRequest, userId: string): Promise<string | null> {
