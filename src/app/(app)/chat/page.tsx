@@ -121,7 +121,8 @@ export default function ChatPage() {
   }
 
   function handleMessageInputKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
-    if (event.key !== 'Enter' || event.shiftKey || event.nativeEvent.isComposing) return
+    const isImeComposing = event.nativeEvent.isComposing || event.keyCode === 229
+    if (event.key !== 'Enter' || event.shiftKey || isImeComposing) return
     if (!window.matchMedia(`(min-width: ${CHAT_DESKTOP_MIN_WIDTH_PX}px)`).matches) return
     event.preventDefault()
     void sendMessage()
