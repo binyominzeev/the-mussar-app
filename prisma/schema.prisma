@@ -52,10 +52,12 @@ model Focus {
 }
 
 model Action {
-  id      String @id @default(cuid())
-  focusId String
-  title   String
-  type    String
+  id           String  @id @default(cuid())
+  focusId      String
+  title        String
+  type         String
+  reminderTime String?
+  reminderDays String?
 
   focus    Focus     @relation(fields: [focusId], references: [id])
   checkins Checkin[]

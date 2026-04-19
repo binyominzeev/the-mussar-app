@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { resolveWriteUserId } from '@/lib/mentorMode'
 import { prisma } from '@/lib/prisma'
+import { normalizeReminderDays, normalizeReminderTime } from '@/lib/reminders'
 import { getSessionUserId } from '@/lib/session'
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -16,6 +17,19 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const { id } = await params
   const body = await req.json()
+  const reminderTime = normalizeReminderTime(body.reminderTime)
+  const reminderDays = normalizeReminderDays(body.reminderDays)
+  const hasReminderTime = typeof body.reminderTime === 'string' && body.reminderTime.trim().length > 0
+  const hasReminderDays =
+    (typeof body.reminderDays === 'string' && body.reminderDays.trim().length > 0) ||
+    (Array.isArray(body.reminderDays) && body.reminderDays.length > 0)
+
+  if ((hasReminderTime && !reminderTime) || (hasReminderDays && !reminderDays)) {
+    return NextResponse.json({ error: 'Invalid reminder format' }, { status: 400 })
+  }
+  if ((reminderTime && !reminderDays) || (!reminderTime && reminderDays)) {
+    return NextResponse.json({ error: 'reminderTime and reminderDays must be set together' }, { status: 400 })
+  }
 
   const action = await prisma.action.findUnique({
     where: { id },
@@ -25,7 +39,12 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const updated = await prisma.action.update({
     where: { id },
-    data: { title: body.title, type: body.type },
+    data: {
+      title: body.title,
+      type: body.type,
+      reminderTime,
+      reminderDays,
+    },
   })
 
   return NextResponse.json(updated)

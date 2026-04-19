@@ -9,6 +9,7 @@ A structured personal growth and accountability web app built with Next.js, Pris
 - **Weekly Review** — completion stats and reflection
 - **Admin Panel** — user management and accountability pairs
 - **Direct Chat** — instant messaging between accountability partners and mentor relationships
+- **Action Reminders** — optional HH:MM reminders with selected weekdays for each action
 - **Authentication** — email + password login
 
 ## Getting Started
@@ -43,6 +44,22 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+## Native App (Capacitor)
+
+Capacitor is configured for Android/iOS wrappers and native notifications.
+
+```bash
+# build web bundle first
+npm run build
+
+# sync native projects
+npm run cap:sync
+
+# open native IDE projects
+npm run cap:open:android
+npm run cap:open:ios
+```
 
 ## Data Structure
 
