@@ -41,8 +41,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const updated = await prisma.action.update({
     where: { id },
     data: {
-      reminderTime,
-      reminderDays,
+      reminderTime: reminderTime || null,
+      reminderDays: reminderDays || null,
     },
     select: {
       id: true,
