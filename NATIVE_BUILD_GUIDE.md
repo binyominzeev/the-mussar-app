@@ -5,7 +5,7 @@ The Next.js application remains your backend for API routes, authentication, and
 
 ## 1) Prerequisites
 
-- Node.js 18+
+- Node.js 18+ (Node.js 20 recommended for Expo SDK 54)
 - Existing backend running/deployed (`npm run dev` or production URL)
 - Expo account (for EAS cloud builds)
 

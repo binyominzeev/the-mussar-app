@@ -1,4 +1,4 @@
-const API_BASE_URL = (process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000').replace(/\/$/, '')
+import { API_BASE_URL } from '../config'
 
 export interface AuthSession {
   user: {
@@ -20,18 +20,33 @@ interface ReminderResponse {
   actions?: ReminderAction[]
 }
 
+export class MobileApiError extends Error {
+  constructor(
+    public readonly kind: 'network' | 'http' | 'auth',
+    message: string,
+    public readonly cause?: unknown
+  ) {
+    super(message)
+  }
+}
+
 async function request(path: string, init?: RequestInit) {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...init,
-    credentials: 'include',
-    headers: {
-      ...(init?.headers ?? {}),
-      Accept: 'application/json',
-    },
-  })
+  let response: Response
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      ...init,
+      credentials: 'include',
+      headers: {
+        ...(init?.headers ?? {}),
+        Accept: 'application/json',
+      },
+    })
+  } catch (error) {
+    throw new MobileApiError('network', 'Cannot reach backend server', error)
+  }
 
   if (!response.ok) {
-    throw new Error(`Request failed: ${response.status}`)
+    throw new MobileApiError('http', `Request failed: ${response.status}`)
   }
 
   return response
@@ -52,14 +67,18 @@ export async function login(email: string, password: string) {
     password,
     json: 'true',
     redirect: 'false',
-    callbackUrl: `${API_BASE_URL}/goals`,
   })
 
-  await request('/api/auth/callback/credentials', {
+  const response = await request('/api/auth/callback/credentials', {
     method: 'POST',
     body: body.toString(),
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
   })
+
+  const payload = (await response.json()) as { error?: string; url?: string }
+  if (payload.error || payload.url?.includes('error=')) {
+    throw new MobileApiError('auth', 'Invalid credentials')
+  }
 }
 
 export async function getSession(): Promise<AuthSession | null> {

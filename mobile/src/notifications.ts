@@ -29,9 +29,10 @@ export async function registerForPushNotificationsAsync() {
 export async function scheduleReminderNotification(title: string, reminderTime: string) {
   await Notifications.scheduleNotificationAsync({
     content: {
-      title: 'Mussar reminder',
+      title: 'Activity reminder',
       body: `${title} (${reminderTime})`,
     },
+    // We fire immediately because due reminders are already filtered by backend time matching.
     trigger: null,
   })
 }

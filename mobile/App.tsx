@@ -1,8 +1,9 @@
 import { StatusBar } from 'expo-status-bar'
 import { useEffect, useMemo, useState } from 'react'
 import { ActivityIndicator, Button, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
-import { getSession, login, type AuthSession, type ReminderAction, fetchDueReminders } from './src/api/client'
+import { getSession, login, type AuthSession, type ReminderAction, fetchDueReminders, MobileApiError } from './src/api/client'
 import { registerForPushNotificationsAsync, scheduleReminderNotification } from './src/notifications'
+import { API_BASE_URL } from './src/config'
 
 export default function App() {
   const [session, setSession] = useState<AuthSession | null>(null)
@@ -16,7 +17,12 @@ export default function App() {
   const statusText = useMemo(() => (session ? `Logged in as ${session.user.email}` : 'Not signed in'), [session])
 
   useEffect(() => {
-    getSession().then(setSession).catch(() => setSession(null))
+    getSession()
+      .then(setSession)
+      .catch(() => {
+        setSession(null)
+        setError('Unable to restore session from backend.')
+      })
     registerForPushNotificationsAsync()
       .then((token) => {
         if (token) setPushToken(token)
@@ -32,8 +38,14 @@ export default function App() {
       const nextSession = await getSession()
       setSession(nextSession)
       setReminders([])
-    } catch {
-      setError('Invalid credentials or backend unreachable.')
+    } catch (err) {
+      if (err instanceof MobileApiError && err.kind === 'auth') {
+        setError('Sign-in failed: invalid credentials.')
+      } else if (err instanceof MobileApiError && err.kind === 'network') {
+        setError('Sign-in failed: backend is unreachable.')
+      } else {
+        setError('Sign-in failed: unexpected error.')
+      }
     } finally {
       setLoading(false)
     }
@@ -46,8 +58,12 @@ export default function App() {
       for (const reminder of due) {
         await scheduleReminderNotification(reminder.title, reminder.reminderTime)
       }
-    } catch {
-      setError('Failed to load reminders.')
+    } catch (err) {
+      if (err instanceof MobileApiError) {
+        setError('Failed to fetch reminders from backend.')
+      } else {
+        setError('Fetched reminders, but local notification scheduling failed.')
+      }
     }
   }
 
@@ -57,7 +73,7 @@ export default function App() {
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.title}>Mussar Mobile (Expo)</Text>
         <Text style={styles.subtitle}>{statusText}</Text>
-        <Text style={styles.hint}>Backend: {process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000'}</Text>
+        <Text style={styles.hint}>Backend: {API_BASE_URL}</Text>
         {pushToken ? <Text style={styles.hint}>Push token acquired ✓</Text> : <Text style={styles.hint}>Push token pending</Text>}
 
         {!session && (
