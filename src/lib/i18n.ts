@@ -78,6 +78,9 @@ export interface Translations {
     actionTypeBinary: string
     actionTypeQuantitative: string
     actionTypeReflection: string
+    reminderLabel: string
+    reminderTimeLabel: string
+    reminderClear: string
     activeWeekdays: string
     weekdayMon: string
     weekdayTue: string
@@ -218,6 +221,9 @@ export const translations: Record<Language, Translations> = {
       actionTypeBinary: 'Binary (yes/no)',
       actionTypeQuantitative: 'Quantitative (number)',
       actionTypeReflection: 'Reflection (text)',
+      reminderLabel: 'Reminder',
+      reminderTimeLabel: 'Reminder time',
+      reminderClear: 'Clear reminder',
       activeWeekdays: 'Active days',
       weekdayMon: 'M',
       weekdayTue: 'T',
@@ -358,6 +364,9 @@ export const translations: Record<Language, Translations> = {
       actionTypeBinary: 'Bináris (igen/nem)',
       actionTypeQuantitative: 'Mennyiségi (szám)',
       actionTypeReflection: 'Reflexió (szöveg)',
+      reminderLabel: 'Emlékeztető',
+      reminderTimeLabel: 'Emlékeztető ideje',
+      reminderClear: 'Emlékeztető törlése',
       activeWeekdays: 'Aktív napok',
       weekdayMon: 'H',
       weekdayTue: 'K',

@@ -11,6 +11,8 @@ interface Action {
   id: string
   title: string
   type: string
+  reminderTime?: string | null
+  reminderDays?: string | null
 }
 
 interface Focus {
@@ -133,7 +135,11 @@ export default function GoalTypeDetails({ type, title }: { type: GoalType; title
     await load()
   }
 
-  async function saveAction(data: { title: string; type: string }, focusId: string, id?: string) {
+  async function saveAction(
+    data: { title: string; type: string; reminderTime?: string; reminderDays: number[] },
+    focusId: string,
+    id?: string
+  ) {
     if (id) {
       await fetch(`/api/actions/${id}`, {
         method: 'PUT',
@@ -265,7 +271,14 @@ export default function GoalTypeDetails({ type, title }: { type: GoalType; title
                 <div key={action.id}>
                   <div className="p-3 bg-gray-50 rounded-lg">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-medium">{action.title}</p>
+                      <div>
+                        <p className="text-sm font-medium">{action.title}</p>
+                        {action.reminderTime && action.reminderDays && (
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            {t.goals.reminderLabel}: {formatReminder(action.reminderTime, action.reminderDays, t)}
+                          </p>
+                        )}
+                      </div>
                       {editMode ? (
                         <div className="flex items-center gap-2">
                           <button
@@ -362,6 +375,32 @@ export default function GoalTypeDetails({ type, title }: { type: GoalType; title
       )}
     </div>
   )
+}
+
+function parseReminderDaysCsv(value?: string | null): number[] {
+  if (!value) return []
+
+  return value
+    .split(',')
+    .map((day) => Number(day.trim()))
+    .filter((day) => Number.isInteger(day) && day >= 0 && day <= 6)
+}
+
+function formatReminder(time: string, daysCsv: string, t: ReturnType<typeof useLanguage>['t']) {
+  const dayLabels = [
+    t.goals.weekdaySun,
+    t.goals.weekdayMon,
+    t.goals.weekdayTue,
+    t.goals.weekdayWed,
+    t.goals.weekdayThu,
+    t.goals.weekdayFri,
+    t.goals.weekdaySat,
+  ]
+  const dayText = parseReminderDaysCsv(daysCsv)
+    .map((day) => dayLabels[day])
+    .join(', ')
+
+  return `${time}${dayText ? ` (${dayText})` : ''}`
 }
 
 function ActionCheckinEditor({
@@ -512,13 +551,39 @@ function ActionForm({
   onCancel,
   t,
 }: {
-  initial?: { title?: string; type?: string }
-  onSave: (data: { title: string; type: string }) => void
+  initial?: { title?: string; type?: string; reminderTime?: string | null; reminderDays?: string | null }
+  onSave: (data: { title: string; type: string; reminderTime?: string; reminderDays: number[] }) => void
   onCancel: () => void
   t: ReturnType<typeof useLanguage>['t']['goals']
 }) {
   const [title, setTitle] = useState(initial?.title || '')
   const [type, setType] = useState(initial?.type || 'binary')
+  const [reminderTime, setReminderTime] = useState(initial?.reminderTime || '')
+  const [reminderDays, setReminderDays] = useState<number[]>(() => parseReminderDaysCsv(initial?.reminderDays))
+
+  const weekdayButtons = [
+    { value: 1, label: t.weekdayMon },
+    { value: 2, label: t.weekdayTue },
+    { value: 3, label: t.weekdayWed },
+    { value: 4, label: t.weekdayThu },
+    { value: 5, label: t.weekdayFri },
+    { value: 6, label: t.weekdaySat },
+    { value: 0, label: t.weekdaySun },
+  ]
+
+  const toggleReminderDay = (day: number) => {
+    setReminderDays((prev) => {
+      if (prev.includes(day)) {
+        return prev.filter((item) => item !== day)
+      }
+      return [...prev, day].sort((a, b) => a - b)
+    })
+  }
+
+  const clearReminder = () => {
+    setReminderTime('')
+    setReminderDays([])
+  }
 
   return (
     <div className="border border-gray-200 rounded-lg p-3 space-y-2 bg-white text-sm">
@@ -528,8 +593,50 @@ function ActionForm({
         <option value="quantitative">{t.actionTypeQuantitative}</option>
         <option value="reflection">{t.actionTypeReflection}</option>
       </select>
+      <div className="space-y-2">
+        <label className="block text-xs text-gray-600">{t.reminderTimeLabel}</label>
+        <input
+          type="time"
+          value={reminderTime}
+          onChange={(e) => setReminderTime(e.target.value)}
+          className="w-full border border-gray-200 rounded px-2 py-1.5 text-sm"
+        />
+        <div className="flex flex-wrap gap-1.5">
+          {weekdayButtons.map((day) => {
+            const active = reminderDays.includes(day.value)
+            return (
+              <button
+                key={day.value}
+                type="button"
+                onClick={() => toggleReminderDay(day.value)}
+                className={[
+                  'rounded px-2 py-1 text-xs border transition-colors',
+                  active ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-300 text-gray-600 hover:bg-gray-100',
+                ].join(' ')}
+              >
+                {day.label}
+              </button>
+            )
+          })}
+        </div>
+      </div>
       <div className="flex gap-2">
-        <button onClick={() => onSave({ title, type })} className="text-xs bg-gray-900 text-white rounded px-3 py-1.5 hover:bg-gray-700">{t.save}</button>
+        <button
+          onClick={() =>
+            onSave({
+              title,
+              type,
+              reminderTime: reminderTime || undefined,
+              reminderDays,
+            })
+          }
+          className="text-xs bg-gray-900 text-white rounded px-3 py-1.5 hover:bg-gray-700"
+        >
+          {t.save}
+        </button>
+        <button onClick={clearReminder} type="button" className="text-xs text-gray-500 px-3 py-1.5">
+          {t.reminderClear}
+        </button>
         <button onClick={onCancel} className="text-xs text-gray-500 px-3 py-1.5">{t.cancel}</button>
       </div>
     </div>

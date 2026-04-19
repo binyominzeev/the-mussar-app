@@ -6,16 +6,18 @@ import { prisma } from '@/lib/prisma'
 import { normalizeReminderDays, normalizeReminderTime } from '@/lib/reminders'
 import { getSessionUserId } from '@/lib/session'
 
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
   const userId = getSessionUserId(session)
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const writeUserId = await resolveWriteUserId(req, userId)
   if (!writeUserId) {
     return NextResponse.json({ error: 'Mentor mode is read-only' }, { status: 403 })
   }
 
   const body = await req.json()
+  const { id } = await params
   const reminderTime = normalizeReminderTime(body.reminderTime)
   const reminderDays = normalizeReminderDays(body.reminderDays)
   const hasReminderTime = typeof body.reminderTime === 'string' && body.reminderTime.trim().length > 0
@@ -30,18 +32,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'reminderTime and reminderDays must be set together' }, { status: 400 })
   }
 
-  const focus = await prisma.focus.findUnique({ where: { id: body.focusId }, include: { goal: true } })
-  if (!focus || focus.goal.userId !== writeUserId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const action = await prisma.action.findUnique({
+    where: { id },
+    include: { focus: { include: { goal: true } } },
+  })
+  if (!action || action.focus.goal.userId !== writeUserId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  const action = await prisma.action.create({
+  const updated = await prisma.action.update({
+    where: { id },
     data: {
-      focusId: body.focusId,
-      title: body.title,
-      type: body.type,
       reminderTime,
       reminderDays,
     },
+    select: {
+      id: true,
+      reminderTime: true,
+      reminderDays: true,
+    },
   })
 
-  return NextResponse.json(action)
+  return NextResponse.json(updated)
 }
