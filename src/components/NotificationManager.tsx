@@ -14,6 +14,20 @@ interface ReminderResponse {
   now?: string
 }
 
+function hashNotificationId(input: string): number {
+  let hash = 0
+  for (let i = 0; i < input.length; i += 1) {
+    hash = (hash * 31 + input.charCodeAt(i)) >>> 0
+  }
+  return (hash % 2147483647) + 1
+}
+
+function minuteKeyFromIso(isoString: string): string {
+  const parsed = new Date(isoString)
+  if (Number.isNaN(parsed.getTime())) return isoString.slice(0, 16)
+  return parsed.toISOString().slice(0, 16)
+}
+
 function ensureNotificationPreferences() {
   const existing = localStorage.getItem(NOTIFICATION_PREFERENCES_KEY)
   if (existing) return
@@ -64,7 +78,7 @@ async function checkAndFireDueReminders() {
   const data = (await res.json()) as ReminderResponse
   if (!data.actions?.length || !data.now) return
 
-  const minute = data.now.slice(0, 16)
+  const minute = minuteKeyFromIso(data.now)
   const lastFired = loadLastFired()
 
   for (const action of data.actions) {
@@ -74,8 +88,8 @@ async function checkAndFireDueReminders() {
     if (isNative) {
       await LocalNotifications.schedule({
         notifications: [
-          {
-            id: Number(action.id.replace(/\D/g, '').slice(0, 6)) || Math.floor(Math.random() * 1000000),
+            {
+            id: hashNotificationId(action.id),
             title: 'Activity reminder',
             body: `${action.title} (${action.reminderTime})`,
             schedule: { at: new Date(Date.now() + 1000) },
