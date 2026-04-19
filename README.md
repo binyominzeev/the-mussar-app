@@ -10,7 +10,7 @@ A structured personal growth and accountability web app built with Next.js, Pris
 - **Admin Panel** — user management and accountability pairs
 - **Direct Chat** — instant messaging between accountability partners and mentor relationships
 - **Action Reminders** — optional HH:MM reminders with selected weekdays for each action
-- **Native App Ready** — Capacitor Android/iOS wrappers with push + local notification support
+- **Native App Ready** — Expo React Native mobile app with push + local notifications
 - **Authentication** — email + password login
 
 ## Getting Started
@@ -46,24 +46,25 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-## Native App (Capacitor)
+## Native App (Expo React Native)
 
-Capacitor is configured for Android/iOS wrappers and native notifications.
+The repository now includes a dedicated Expo React Native app under [`mobile/`](./mobile).
+The Next.js app remains the backend (API routes, auth, database) and the mobile app communicates with it over HTTP.
 
 For full native build, push configuration, testing, and store submission steps, see:
 
 - [`NATIVE_BUILD_GUIDE.md`](./NATIVE_BUILD_GUIDE.md)
 
 ```bash
-# build web bundle first
-npm run build
+# configure mobile backend URL
+cp mobile/.env.example mobile/.env
 
-# sync native projects
-npm run cap:sync
+# run mobile app
+npm run mobile:start
 
-# open native IDE projects
-npm run cap:open:android
-npm run cap:open:ios
+# open native dev builds
+npm run mobile:android
+npm run mobile:ios
 ```
 
 ## Data Structure
@@ -78,7 +79,8 @@ User
 
 ## Tech Stack
 
-- **Next.js 14** (App Router)
+- **Next.js 15** (App Router backend)
+- **Expo + React Native** (native mobile client)
 - **Prisma** + SQLite
 - **NextAuth.js** (email/password)
 - **Tailwind CSS**

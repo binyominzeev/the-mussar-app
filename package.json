@@ -7,15 +7,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "cap:sync": "npx cap sync",
-    "cap:open:android": "npx cap open android",
-    "cap:open:ios": "npx cap open ios"
+    "mobile:start": "npm --prefix mobile run start",
+    "mobile:android": "npm --prefix mobile run android",
+    "mobile:ios": "npm --prefix mobile run ios",
+    "mobile:build:android": "npm --prefix mobile run build:android",
+    "mobile:build:ios": "npm --prefix mobile run build:ios"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
-    "@capacitor/core": "^8.3.1",
-    "@capacitor/local-notifications": "^8.0.2",
-    "@capacitor/push-notifications": "^8.0.3",
     "@prisma/client": "^5.22.0",
     "bcryptjs": "^3.0.3",
     "next": "^15.5.15",
@@ -28,7 +27,6 @@
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   },
   "devDependencies": {
-    "@capacitor/cli": "^8.3.1",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
     "@types/react": "^18",
