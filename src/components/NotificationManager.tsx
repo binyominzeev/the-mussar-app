@@ -1,9 +1,6 @@
 'use client'
 
 import { useEffect } from 'react'
-import { Capacitor } from '@capacitor/core'
-import { LocalNotifications } from '@capacitor/local-notifications'
-import { PushNotifications } from '@capacitor/push-notifications'
 
 const NOTIFICATION_PREFERENCES_KEY = 'notificationPreferences'
 const LAST_FIRED_KEY = 'activityReminder:lastFired'
@@ -68,9 +65,9 @@ function saveLastFired(state: Record<string, string>) {
 }
 
 async function checkAndFireDueReminders() {
+  if (typeof Notification === 'undefined') return
   if (!activityRemindersEnabled()) return
-  const isNative = Capacitor.isNativePlatform()
-  if (!isNative && Notification.permission !== 'granted') return
+  if (Notification.permission !== 'granted') return
 
   const res = await fetch('/api/actions/reminders-due', { credentials: 'include' })
   if (!res.ok) return
@@ -85,23 +82,10 @@ async function checkAndFireDueReminders() {
     const dedupeKey = `${action.id}:${minute}`
     if (lastFired[dedupeKey]) continue
 
-    if (isNative) {
-      await LocalNotifications.schedule({
-        notifications: [
-            {
-            id: hashNotificationId(action.id),
-            title: 'Activity reminder',
-            body: `${action.title} (${action.reminderTime})`,
-            schedule: { at: new Date(Date.now() + 1000) },
-          },
-        ],
-      })
-    } else {
-      new Notification('Activity reminder', {
-        body: `${action.title} (${action.reminderTime})`,
-        tag: `action-reminder-${action.id}`,
-      })
-    }
+    new Notification('Activity reminder', {
+      body: `${action.title} (${action.reminderTime})`,
+      tag: `action-reminder-${hashNotificationId(action.id)}`,
+    })
     lastFired[dedupeKey] = data.now
   }
 
@@ -114,17 +98,7 @@ export function NotificationManager() {
 
     ensureNotificationPreferences()
 
-    if (Capacitor.isNativePlatform()) {
-      PushNotifications.requestPermissions()
-        .then((permission) => {
-          if (permission.receive === 'granted') {
-            PushNotifications.register()
-          }
-        })
-        .catch(() => {})
-
-      LocalNotifications.requestPermissions().catch(() => {})
-    } else if (Notification.permission === 'default') {
+    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
       Notification.requestPermission().catch(() => {})
     }
 
