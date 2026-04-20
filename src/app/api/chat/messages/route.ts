@@ -4,9 +4,20 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getSessionUserId } from '@/lib/session'
 import { canUsersChat } from '@/lib/chat'
+import { createNotificationTargetData, sendExpoPushNotification } from '@/lib/expoPush'
 
 const MAX_MESSAGE_LENGTH = 2000
 const MAX_MESSAGES_PER_THREAD = 500
+const PUSH_MESSAGE_PREVIEW_LENGTH = 160
+const PUSH_MESSAGE_ELLIPSIS = '…'
+
+function toMessagePreview(text: string) {
+  if (text.length <= PUSH_MESSAGE_PREVIEW_LENGTH) {
+    return text
+  }
+
+  return `${text.slice(0, PUSH_MESSAGE_PREVIEW_LENGTH - PUSH_MESSAGE_ELLIPSIS.length)}${PUSH_MESSAGE_ELLIPSIS}`
+}
 
 function parseOtherUserId(req: NextRequest): string | null {
   const value = req.nextUrl.searchParams.get('userId')?.trim()
@@ -95,8 +106,37 @@ export async function POST(req: NextRequest) {
       body: true,
       createdAt: true,
       readAt: true,
+      sender: {
+        select: {
+          name: true,
+        },
+      },
+      recipient: {
+        select: {
+          expoPushToken: true,
+        },
+      },
     },
   })
 
-  return NextResponse.json(message, { status: 201 })
+  if (message.recipient.expoPushToken) {
+    void sendExpoPushNotification({
+      to: message.recipient.expoPushToken,
+      title: message.sender.name ?? 'Message received',
+      body: toMessagePreview(text),
+      data: createNotificationTargetData('/chat'),
+    })
+  }
+
+  return NextResponse.json(
+    {
+      id: message.id,
+      senderId: message.senderId,
+      recipientId: message.recipientId,
+      body: message.body,
+      createdAt: message.createdAt,
+      readAt: message.readAt,
+    },
+    { status: 201 }
+  )
 }

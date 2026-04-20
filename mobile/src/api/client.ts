@@ -93,3 +93,11 @@ export async function fetchDueReminders() {
   const payload = (await response.json()) as ReminderResponse
   return payload.actions ?? []
 }
+
+export async function updateExpoPushToken(expoPushToken: string) {
+  await request('/api/users/push-token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ expoPushToken }),
+  })
+}
