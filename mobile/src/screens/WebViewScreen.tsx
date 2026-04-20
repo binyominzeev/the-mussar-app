@@ -78,8 +78,8 @@ export function WebViewScreen({ route }: Props) {
         setSupportMultipleWindows={false}
         startInLoadingState
         renderLoading={() => (
-          <View style={styles.loading}>
-            <ActivityIndicator size="small" accessibilityLabel="Loading page" />
+          <View style={styles.loading} accessible accessibilityLiveRegion="polite">
+            <ActivityIndicator size="small" />
           </View>
         )}
       />

@@ -7,7 +7,7 @@ import { NotificationScreen } from './src/screens/NotificationScreen'
 import { WebViewScreen } from './src/screens/WebViewScreen'
 
 export type RootStackParamList = {
-  Main: { targetUrl?: string; nonce?: number } | undefined
+  Main: { targetUrl?: string; refreshKey?: number } | undefined
   Notification: undefined
 }
 
@@ -48,7 +48,7 @@ export default function App() {
 
     navigationRef.navigate('Main', {
       targetUrl: pendingTargetUrl,
-      nonce: Date.now(),
+      refreshKey: Date.now(),
     })
     setPendingTargetUrl(null)
   }, [navigationRef, pendingTargetUrl])

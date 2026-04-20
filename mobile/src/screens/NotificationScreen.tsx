@@ -6,8 +6,10 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Notification'>
 
 export function NotificationScreen({ navigation }: Props) {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Notification opened</Text>
+    <View style={styles.container} accessible accessibilityLabel="Notification opened. Continue to app.">
+      <Text style={styles.title} accessibilityRole="header">
+        Notification opened
+      </Text>
       <Text style={styles.body}>This notification has no specific target page. Continue to the app.</Text>
       <Button title="Continue to app" onPress={() => navigation.navigate('Main')} />
     </View>
