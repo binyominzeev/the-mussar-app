@@ -5,6 +5,7 @@ import { resolveReadUserId } from '@/lib/mentorMode'
 import { prisma } from '@/lib/prisma'
 import { isReminderDue } from '@/lib/reminders'
 import { getSessionUserId } from '@/lib/session'
+import { sendExpoPushNotification } from '@/lib/expoPush'
 
 function parseCurrentTime(req: NextRequest): Date {
   const at = req.nextUrl.searchParams.get('at')
@@ -44,6 +45,27 @@ export async function GET(req: NextRequest) {
       action.reminderDays &&
       isReminderDue(action.reminderTime, action.reminderDays, now)
   )
+
+  if (readUserId === userId && dueActions.length > 0) {
+    const targetUser = await prisma.user.findUnique({
+      where: { id: readUserId },
+      select: { expoPushToken: true },
+    })
+
+    if (targetUser?.expoPushToken) {
+      for (const action of dueActions) {
+        await sendExpoPushNotification({
+          to: targetUser.expoPushToken,
+          title: 'Activity reminder',
+          body: `${action.title} (${action.reminderTime})`,
+          data: {
+            path: '/goals',
+            url: '/goals',
+          },
+        })
+      }
+    }
+  }
 
   return NextResponse.json({
     now: now.toISOString(),

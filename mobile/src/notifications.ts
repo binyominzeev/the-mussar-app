@@ -1,5 +1,6 @@
 import * as Device from 'expo-device'
 import * as Notifications from 'expo-notifications'
+import { updateExpoPushToken } from './api/client'
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -63,6 +64,7 @@ export async function registerForPushNotificationsAsync() {
   if (finalStatus !== 'granted') return null
 
   const token = await Notifications.getExpoPushTokenAsync()
+  await updateExpoPushToken(token.data)
   return token.data
 }
 
