@@ -79,7 +79,7 @@ export function WebViewScreen({ route }: Props) {
         startInLoadingState
         renderLoading={() => (
           <View style={styles.loading}>
-            <ActivityIndicator size="small" />
+            <ActivityIndicator size="small" accessibilityLabel="Loading page" />
           </View>
         )}
       />

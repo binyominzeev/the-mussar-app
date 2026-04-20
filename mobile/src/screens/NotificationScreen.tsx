@@ -9,7 +9,7 @@ export function NotificationScreen({ navigation }: Props) {
     <View style={styles.container}>
       <Text style={styles.title}>Notification opened</Text>
       <Text style={styles.body}>This notification has no specific target page. Continue to the app.</Text>
-      <Button title="Open Mussar" onPress={() => navigation.navigate('WebView')} />
+      <Button title="Continue to app" onPress={() => navigation.navigate('WebView')} />
     </View>
   )
 }
