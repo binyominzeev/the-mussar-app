@@ -11,6 +11,46 @@ Notifications.setNotificationHandler({
   }),
 })
 
+function getTargetFromData(data: Notifications.NotificationContentInput['data']) {
+  const payload = data && typeof data === 'object' ? data : undefined
+  if (!payload) {
+    return null
+  }
+
+  const url = payload.url
+  if (typeof url === 'string' && url.length > 0) {
+    return url
+  }
+
+  const path = payload.path
+  if (typeof path === 'string' && path.length > 0) {
+    return path
+  }
+
+  return null
+}
+
+function getTargetFromResponse(response: Notifications.NotificationResponse) {
+  return getTargetFromData(response.notification.request.content.data)
+}
+
+export function addNotificationResponseListener(listener: (targetUrl: string | null) => void) {
+  const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
+    listener(getTargetFromResponse(response))
+  })
+
+  return () => subscription.remove()
+}
+
+export async function getInitialNotificationTargetAsync() {
+  const response = await Notifications.getLastNotificationResponseAsync()
+  if (!response) {
+    return null
+  }
+
+  return getTargetFromResponse(response)
+}
+
 export async function registerForPushNotificationsAsync() {
   if (!Device.isDevice) return null
 
