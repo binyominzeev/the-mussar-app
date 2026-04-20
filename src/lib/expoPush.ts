@@ -17,13 +17,21 @@ export function isValidExpoPushToken(token: string | null | undefined): token is
   return typeof token === 'string' && EXPO_PUSH_TOKEN_RE.test(token.trim())
 }
 
+export function createNotificationTargetData(targetPath: string): NotificationData {
+  return {
+    // Keep both keys for compatibility with existing mobile/web notification routing.
+    path: targetPath,
+    url: targetPath,
+  }
+}
+
 export async function sendExpoPushNotification(message: ExpoPushMessage) {
   if (!isValidExpoPushToken(message.to)) {
     return
   }
 
   try {
-    await fetch(EXPO_PUSH_API_URL, {
+    const response = await fetch(EXPO_PUSH_API_URL, {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -31,7 +39,12 @@ export async function sendExpoPushNotification(message: ExpoPushMessage) {
       },
       body: JSON.stringify(message),
     })
-  } catch {
+    if (!response.ok) {
+      console.warn(`Expo push delivery failed with status ${response.status}`)
+      return
+    }
+  } catch (error) {
     // Ignore push delivery errors so primary API operations succeed.
+    console.warn('Expo push delivery error', error)
   }
 }
