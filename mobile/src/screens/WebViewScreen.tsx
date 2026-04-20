@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, BackHandler, Platform, StyleSheet, View } from 'react-native'
 import { useFocusEffect } from '@react-navigation/native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
@@ -33,7 +33,7 @@ export function WebViewScreen({ route }: Props) {
   const [currentUrl, setCurrentUrl] = useState(API_BASE_URL)
   const [canGoBack, setCanGoBack] = useState(false)
 
-  const targetUrl = useMemo(() => resolveTargetUrl(route.params?.targetUrl), [route.params?.targetUrl])
+  const targetUrl = resolveTargetUrl(route.params?.targetUrl)
 
   useEffect(() => {
     if (targetUrl !== currentUrl) {
@@ -79,7 +79,7 @@ export function WebViewScreen({ route }: Props) {
         startInLoadingState
         renderLoading={() => (
           <View style={styles.loading} accessible accessibilityLiveRegion="polite">
-            <ActivityIndicator size="small" />
+            <ActivityIndicator size="small" accessibilityLabel="Loading page" />
           </View>
         )}
       />
