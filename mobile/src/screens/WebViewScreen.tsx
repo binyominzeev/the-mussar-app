@@ -7,7 +7,7 @@ import type { WebViewNavigation } from 'react-native-webview/lib/WebViewTypes'
 import type { RootStackParamList } from '../../App'
 import { API_BASE_URL } from '../config'
 
-type Props = NativeStackScreenProps<RootStackParamList, 'WebView'>
+type Props = NativeStackScreenProps<RootStackParamList, 'Main'>
 
 function resolveTargetUrl(targetUrl?: string) {
   if (!targetUrl) {

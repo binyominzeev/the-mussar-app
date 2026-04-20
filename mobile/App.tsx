@@ -7,7 +7,7 @@ import { NotificationScreen } from './src/screens/NotificationScreen'
 import { WebViewScreen } from './src/screens/WebViewScreen'
 
 export type RootStackParamList = {
-  WebView: { targetUrl?: string; nonce?: number } | undefined
+  Main: { targetUrl?: string; nonce?: number } | undefined
   Notification: undefined
 }
 
@@ -46,7 +46,7 @@ export default function App() {
       return
     }
 
-    navigationRef.navigate('WebView', {
+    navigationRef.navigate('Main', {
       targetUrl: pendingTargetUrl,
       nonce: Date.now(),
     })
@@ -57,7 +57,7 @@ export default function App() {
     <NavigationContainer ref={navigationRef}>
       <StatusBar style="dark" />
       <Stack.Navigator>
-        <Stack.Screen name="WebView" component={WebViewScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Main" component={WebViewScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Notification" component={NotificationScreen} options={{ title: 'Notification' }} />
       </Stack.Navigator>
     </NavigationContainer>
