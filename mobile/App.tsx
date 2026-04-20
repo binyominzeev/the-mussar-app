@@ -2,6 +2,7 @@ import { StatusBar } from 'expo-status-bar'
 import { useEffect, useState } from 'react'
 import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { registerForPushNotificationsAsync, addNotificationResponseListener, getInitialNotificationTargetAsync } from './src/notifications'
 import { NotificationScreen } from './src/screens/NotificationScreen'
 import { WebViewScreen } from './src/screens/WebViewScreen'
@@ -54,12 +55,14 @@ export default function App() {
   }, [navigationRef, pendingTargetUrl])
 
   return (
-    <NavigationContainer ref={navigationRef}>
-      <StatusBar style="dark" />
-      <Stack.Navigator>
-        <Stack.Screen name="Main" component={WebViewScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="Notification" component={NotificationScreen} options={{ title: 'Notification' }} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
+      <NavigationContainer ref={navigationRef}>
+        <StatusBar style="dark" />
+        <Stack.Navigator>
+          <Stack.Screen name="Main" component={WebViewScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="Notification" component={NotificationScreen} options={{ title: 'Notification' }} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </SafeAreaView>
   )
 }
